@@ -1,0 +1,557 @@
+swagger: '2.0'
+info:
+  contact:
+    email: support@meteomatics.com
+    name: Meteomatics API Support
+    url: 'http://api.meteomatics.com'
+  description: >
+    **The awesome API in the Weather World**
+
+    ---
+
+    *This document is still under development and we take no responsibility for its correctness*
+  title: Meteomatics Weather API
+  version: 0.1.0
+host: api.meteomatics.com
+basePath: /
+schemes:
+  - http
+  - https
+paths:
+  /{time}/{parameters}/{lat},{lon}/{format}:
+    parameters:
+      - $ref: '#/x-components/parameters/timeParam'
+      - $ref: '#/x-components/parameters/parametersParam'
+      - $ref: '#/x-components/parameters/lat'
+      - $ref: '#/x-components/parameters/lon'
+      - $ref: '#/x-components/parameters/formatParam'
+      - $ref: '#/x-components/parameters/sourceParam'
+      - $ref: '#/x-components/parameters/verticalInterpol'
+      - $ref: '#/x-components/parameters/temporalInterpol'
+      - $ref: '#/x-components/parameters/ensSelect'
+      - $ref: '#/x-components/parameters/clusterSelect'
+      - $ref: '#/x-components/parameters/timeout'
+    get:
+      produces:
+        - text/plain; charset=utf-8
+        - text/html
+        - text/csv
+        - application/json
+        - application/xml
+      parameters: []
+      responses:
+        '200':
+          description: Ok, data delivery
+          schema:
+            type: file
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/UnauthorizedText'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/NotFoundText'
+      security:
+        - BasicAuth: []
+      summary: Get data for a single point (separate multiple points by '+')
+  /{time}/{parameter}/{location_top_left}_{location_bottom_right}:{resolution}/{format}:
+    parameters:
+      - $ref: '#/x-components/parameters/timeParam'
+      - $ref: '#/x-components/parameters/singleParametersParam'
+      - $ref: '#/x-components/parameters/locationTopLeft'
+      - $ref: '#/x-components/parameters/locationBottomRight'
+      - $ref: '#/x-components/parameters/resolutionLatLon'
+      - $ref: '#/x-components/parameters/formatParam'
+      - $ref: '#/x-components/parameters/sourceParam'
+      - $ref: '#/x-components/parameters/verticalInterpol'
+      - $ref: '#/x-components/parameters/temporalInterpol'
+      - $ref: '#/x-components/parameters/ensSelect'
+      - $ref: '#/x-components/parameters/clusterSelect'
+      - $ref: '#/x-components/parameters/timeout'
+    get:
+      produces:
+        - text/plain; charset=UTF-8
+        - text/csv
+        - image/png
+        - application/json
+        - application/xml
+      parameters: []
+      responses:
+        '200':
+          description: Ok, data delivery
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/UnauthorizedText'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/NotFoundText'
+      security:
+        - BasicAuth: []
+      summary: Get data for an area
+  /{time}/{parameter}/{location_top_left}_{location_bottom_right}:{x_width}x{y_width}/{format}:
+    parameters:
+      - $ref: '#/x-components/parameters/timeParam'
+      - $ref: '#/x-components/parameters/singleParametersParam'
+      - $ref: '#/x-components/parameters/locationTopLeft'
+      - $ref: '#/x-components/parameters/locationBottomRight'
+      - $ref: '#/x-components/parameters/x_widthParam'
+      - $ref: '#/x-components/parameters/y_widthParam'
+      - $ref: '#/x-components/parameters/formatParam'
+      - $ref: '#/x-components/parameters/sourceParam'
+      - $ref: '#/x-components/parameters/verticalInterpol'
+      - $ref: '#/x-components/parameters/temporalInterpol'
+      - $ref: '#/x-components/parameters/ensSelect'
+      - $ref: '#/x-components/parameters/clusterSelect'
+      - $ref: '#/x-components/parameters/timeout'
+    get:
+      produces:
+        - text/plain; charset=UTF-8
+        - text/csv
+        - image/png
+        - application/json
+        - application/xml
+      parameters: []
+      responses:
+        '200':
+          description: Ok, data delivery
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/UnauthorizedText'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/NotFoundText'
+      security:
+        - BasicAuth: []
+      summary: Get data for an area with fixed size
+  /{time}/{parameters}/{zip_codes}/{format}:
+    parameters:
+      - $ref: '#/x-components/parameters/timeParam'
+      - $ref: '#/x-components/parameters/parametersParam'
+      - $ref: '#/x-components/parameters/paramZipCodes'
+      - $ref: '#/x-components/parameters/formatParam'
+      - $ref: '#/x-components/parameters/sourceParam'
+      - $ref: '#/x-components/parameters/verticalInterpol'
+      - $ref: '#/x-components/parameters/temporalInterpol'
+      - $ref: '#/x-components/parameters/ensSelect'
+      - $ref: '#/x-components/parameters/clusterSelect'
+      - $ref: '#/x-components/parameters/timeout'
+    get:
+      produces:
+        - text/plain; charset=UTF-8
+        - text/html
+        - text/csv
+        - application/json
+        - application/xml
+      parameters: []
+      responses:
+        '200':
+          description: Ok, data delivery
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/UnauthorizedText'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/NotFoundText'
+      security:
+        - BasicAuth: []
+      summary: Get data for one or more zip codes
+  /{time}:
+    parameters:
+      - $ref: '#/x-components/parameters/timeParam'
+      - in: body
+        name: request_string
+        description: Everything you would specify in the get request after the time parameter
+        schema:
+          type: string
+          example: 't_2m:C/47.412,9.339927/csv'
+    post:
+      consumes:
+        - text/plain
+      produces:
+        - text/plain; charset=utf-8
+        - text/html
+        - text/csv
+        - application/json
+        - application/xml
+      parameters: []
+      responses:
+        '200':
+          description: Ok, data delivery
+          schema:
+            type: file
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/UnauthorizedText'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/NotFoundText'
+      security:
+        - BasicAuth: []
+      summary: Get data by POST request. Useful for large queries (GET URL > 1000 characters)
+  /user_stats:
+    get:
+      produces:
+        - text/plain; charset=UTF-8
+      parameters: []
+      security:
+        - BasicAuth: []
+      summary: Get your current usage and limits
+      responses:
+        '200':
+          description: Ok
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/UnauthorizedText'
+  /user_stats_json:
+    get:
+      produces:
+        - application/json
+      parameters: []
+      security:
+        - BasicAuth: []
+      summary: Get your current usage and limits in json format
+      responses:
+        '200':
+          description: Ok
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/UnauthorizedText'
+definitions:
+  LocationPoint:
+    description: Latitude and Longitude in decimal degrees
+    items:
+      type: number
+    maxItems: 2
+    minItems: 2
+    type: array
+  NotFoundText:
+    type: string
+  TimePoint:
+    example: '2018-07-05T00:00:00Z'
+    format: date-time
+    type: string
+  TimeRangePeriodEnd:
+    example: '2018-07-05T00:00:00Z--2018-07-06T00:00:00.0Z:PT1H'
+    pattern: >-
+      ^[1-2][0-9]{3}-[01][0-9]-[0-3][0-9](T[0-2][0-9]:[0-2][0-9]:[0-2][0-9](.[0-9]+)?)?Z--[1-2][0-9]{3}-[01][0-9]-[0-3][0-9](T[0-2][0-9]:[0-2][0-9]:[0-2][0-9](.[0-9]+)?)?Z:PT?[0-9]+[DWMYHMS]$
+    type: string
+  TimeRangePeriodLength:
+    example: '2018-07-05T00:00:00ZP1D:PT1H'
+    pattern: >-
+      ^[1-2][0-9]{3}-[01][0-9]-[0-3][0-9](T[0-2][0-9]:[0-2][0-9]:[0-2][0-9](.[0-9]+)?)?ZPT?[0-9]+[DWMYHMS]:PT?[0-9]+[DWMYHMS]$
+    type: string
+  UnauthorizedText:
+    example: 'Username/Password Authentication Failed.'
+    type: string
+securityDefinitions:
+  BasicAuth:
+    type: basic
+x-components:
+  parameters:
+    formatParam:
+      description: >
+        **Ouput format**
+
+        (see [the docs for more options](http://api.meteomatics.com/API-Request.html#available-formats))
+      in: path
+      name: format
+      required: true
+      enum:
+        - csv
+        - xml
+        - json
+        - png
+        - netcdf
+        - html
+        - grads
+      type: string
+    parametersParam:
+      description: >
+        **Parameters of interest**
+
+        for a single location you can request more than one parameter with a single query
+
+        (for all available paramaters see [list of available parameters](http://api.meteomatics.com/Available-Parameters.html))
+      explode: false
+      in: path
+      name: parameters
+      required: true
+      items:
+        pattern: '^[a-zA-Z]+[a-zA-Z0-9_\-]*:[a-zA-Z0-9_\-]+$'
+        type: string
+        enum:
+          - 't_2m:C'
+          - 't_0m:C'
+          - 'precip_1h:mm'
+          - 'prob_precip_1h:p'
+          - 'wind_speed_10m:ms'
+          - 'wind_gusts_10m:ms'
+          - 'relative_humidity_2m:p'
+          - 'weather_symbol_1h:idx'
+          - 'frost_depth:cm'
+          - 'fresh_snow_1h:mm'
+          - 'snow_depth:cm'
+          - 'sunshine_duration_1h:min'
+          - 'global_rad:W'
+          - 'dew_or_rime:idx'
+      minItems: 1
+      type: array
+      style: simple
+    singleParametersParam:
+      description: >
+        **Parameter of interest**
+
+        for a grid you can request only one parameter per query
+
+        (for all available paramaters see [list of available parameters](http://api.meteomatics.com/Available-Parameters.html))
+      in: path
+      name: parameter
+      required: true
+      pattern: '^[a-zA-Z]+[a-zA-Z0-9_\-]*:[a-zA-Z0-9_\-]+$'
+      type: string
+      enum:
+        - 't_2m:C'
+        - 't_0m:C'
+        - 'precip_1h:mm'
+        - 'prob_precip_1h:p'
+        - 'wind_speed_10m:ms'
+        - 'wind_gusts_10m:ms'
+        - 'relative_humidity_2m:p'
+        - 'weather_symbol_1h:idx'
+        - 'frost_depth:cm'
+        - 'fresh_snow_1h:mm'
+        - 'snow_depth:cm'
+        - 'sunshine_duration_1h:min'
+        - 'global_rad:W'
+        - 'dew_or_rime:idx'
+    timeParam:
+      description: >
+        **Time specification according to ISO-8601**
+
+        ***
+
+        ***Times are in UTC by default.*** (`01:00:00Z`)
+
+        ---
+
+        ***
+
+        *You can specify a different timezone by its offset* (e.g. `01:00:00+02:00` for CEST)
+
+        (see [the docs for more details](http://api.meteomatics.com/API-Request.html#time-description))
+      in: path
+      name: time
+      required: true
+      schema:
+        oneOf:
+          - $ref: '#/definitions/TimePoint'
+          - $ref: '#/definitions/TimeRangePeriodLength'
+          - $ref: '#/definitions/TimeRangePeriodEnd'
+      example: '2018-07-05T00:00:00Z'
+      examples:
+        time-point:
+          value: '2018-07-05T00:00:00Z'
+        time-range:
+          value: '2018-07-05T00:00:00ZP1D:PT1H'
+        time-range-end:
+          value: '2018-07-05T00:00:00Z--2018-07-06T00:00:00Z:PT1H'
+    lat:
+      in: path
+      name: lat
+      required: true
+      schema:
+        type: number
+        minimum: -180
+        maximum: 180
+      description: >
+        **Latitude in decimal degrees** ([WGS-84 format](https://en.wikipedia.org/wiki/World_Geodetic_System#A_new_World_Geodetic_System:_WGS_84))
+      example: 47.412
+    lon:
+      in: path
+      name: lon
+      required: true
+      schema:
+        maximum: 90
+        minimum: -90
+        type: number
+      description: >
+        **Longitude in decimal degrees** ([WGS-84 format](https://en.wikipedia.org/wiki/World_Geodetic_System#A_new_World_Geodetic_System:_WGS_84))
+      example: 9.339927
+    locationTopLeft:
+      description: >
+        **North-West corner of the grid** (Lat/Lon)
+      in: path
+      name: location_top_left
+      required: true
+      schema:
+        $ref: '#/definitions/LocationPoint'
+      example: 48.0,9.0
+    locationBottomRight:
+      description: >
+        **South-East corner of the grid** (Lat/Lon)
+      in: path
+      name: location_bottom_right
+      required: true
+      schema:
+        $ref: '#/definitions/LocationPoint'
+      example: 47.0,10.0
+    resolutionLatLon:
+      description: >
+        **Resolution in latitude and longitude direction**
+
+        Given in WGS-84 decimal degrees (0.01 ~ 1km in Switzerland)
+      in: path
+      name: resolution
+      required: true
+      schema:
+        $ref: '#/definitions/LocationPoint'
+      example: '0.01,0.01'
+    x_widthParam:
+      description: >
+        **Number of points on longitude axis**
+      in: path
+      name: x_width
+      required: true
+      type: integer
+      example: 800
+    y_widthParam:
+      description: >
+        **Number of points on latitude axis**
+      in: path
+      name: y_width
+      required: true
+      type: integer
+      example: 600
+    paramZipCodes:
+      description: >
+        **Zip codes** (e.g. `postal_DE10117+postal_CH9014`)
+      in: path
+      name: zip_codes
+      required: true
+      type: array
+      collectionFormat: ssv
+      items:
+        type: string
+      examples:
+        stgallen:
+          'postal_CH9014'
+        berlin:
+          'postal_DE10117'
+        berline&stgallen:
+          'postal_DE10117,postal_CH9014'
+    sourceParam:
+      description: >
+        Specify the source
+
+        ***This is an advanced parameter. Please make sure you are aware of its implications before using it.***
+      type: string
+      in: query
+      required: false
+      name: source
+      enum:
+        - 'mix'
+        - 'mix-radar'
+        - 'mix-obs'
+        - 'cmc-gem'
+        - 'ecmwf-cams'
+        - 'ecmwf-ens'
+        - 'ecmwf-ens-cluster'
+        - 'ecmwf-ens-tc'
+        - 'ecmwf-ifs'
+        - 'ecmwf-mmsf'
+        - 'ecmwf-vareps'
+        - 'ecmwf-wam'
+        - 'fmi-silam'
+        - 'knmi-hirlam'
+        - 'meteosat-msg'
+        - 'mf-arome'
+        - 'mm-heliosat'
+        - 'mm-lightning'
+        - 'mm-swiss1k'
+        - 'mm-mos'
+        - 'mm-tides'
+        - 'nasa-srtm'
+        - 'ncep-gfs'
+        - 'ncep-gfs-ens'
+        - 'noaa-hycom'
+        - 'noaa-swpc'
+        - 'ukmo-euro4'
+    verticalInterpol:
+      description: >
+        Vertical interpolation selection (for model *mix* only)
+
+        ***This is an advanced parameter. Please make sure you are aware of its implications before using it.***
+      type: string
+      in: query
+      required: false
+      name: vertical_interpolation
+      enum:
+        - 'none'
+        - 'gradient_interpolation'
+    temporalInterpol:
+      description: >
+        Temporal interpolation selection (for observational data only)
+
+        ***This is an advanced parameter. Please make sure you are aware of its implications before using it.***
+      type: string
+      in: query
+      required: false
+      name: temporal_interpolation
+      enum:
+        - 'none'
+        - 'best'
+      default: 'best'
+    ensSelect:
+      description: >
+        Select specific ensemble member (for ensemble models only)
+
+        ***This is an advanced parameter. Please make sure you are aware of its implications before using it.***
+      type: array
+      in: query
+      required: false
+      name: ens_select
+      items:
+        type: string
+        enum:
+          - 'member:0'
+          - 'member:1'
+          - 'member:5-15'
+          - 'member:1-50'
+          - 'median'
+          - 'mean'
+          - 'spread'
+          - 'quantile0.3'
+          - 'quantile0.9'
+    clusterSelect:
+      description: >
+        Select specific cluster (for model *ecmwf-ens-cluster* only)
+
+        ***This is an advanced parameter. Please make sure you are aware of its implications before using it.***
+      in: query
+      required: false
+      name: cluster_select
+      type: string
+      enum:
+        - 'cluster:1'
+        - 'cluster:3-6'
+    timeout:
+      description: >
+        Modify the timeout
+
+        ***This is an advanced parameter. Please make sure you are aware of its implications before using it.***
+      type: integer
+      in: query
+      required: false
+      name: timeout
+      default: 300
