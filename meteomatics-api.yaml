@@ -1,4 +1,4 @@
-swagger: '2.0'
+swagger: "2.0"
 info:
   contact:
     email: support@meteomatics.com
@@ -11,7 +11,7 @@ info:
 
     *This document is still under development and we take no responsibility for its correctness*
   title: Meteomatics Weather API
-  version: 0.1.0
+  version: 0.2.0
 host: api.meteomatics.com
 basePath: /
 schemes:
@@ -129,25 +129,24 @@ paths:
         - BasicAuth: []
       summary: Get data for an area with fixed size
   /{time}/{parameters}/{zip_codes}/{format}:
-    parameters:
-      - $ref: '#/x-components/parameters/timeParam'
-      - $ref: '#/x-components/parameters/parametersParam'
-      - $ref: '#/x-components/parameters/paramZipCodes'
-      - $ref: '#/x-components/parameters/formatParam'
-      - $ref: '#/x-components/parameters/sourceParam'
-      - $ref: '#/x-components/parameters/verticalInterpol'
-      - $ref: '#/x-components/parameters/temporalInterpol'
-      - $ref: '#/x-components/parameters/ensSelect'
-      - $ref: '#/x-components/parameters/clusterSelect'
-      - $ref: '#/x-components/parameters/timeout'
     get:
+      parameters:
+        - $ref: '#/x-components/parameters/timeParam'
+        - $ref: '#/x-components/parameters/parametersParam'
+        - $ref: '#/x-components/parameters/paramZipCodes'
+        - $ref: '#/x-components/parameters/formatParam'
+        - $ref: '#/x-components/parameters/sourceParam'
+        - $ref: '#/x-components/parameters/verticalInterpol'
+        - $ref: '#/x-components/parameters/temporalInterpol'
+        - $ref: '#/x-components/parameters/ensSelect'
+        - $ref: '#/x-components/parameters/clusterSelect'
+        - $ref: '#/x-components/parameters/timeout'
       produces:
         - text/plain; charset=UTF-8
         - text/html
         - text/csv
         - application/json
         - application/xml
-      parameters: []
       responses:
         '200':
           description: Ok, data delivery
@@ -162,25 +161,58 @@ paths:
       security:
         - BasicAuth: []
       summary: Get data for one or more zip codes
+  /{time}/{parameters}/didok_{dst_id}/{format}:
+    get:
+      parameters:
+        - $ref: '#/x-components/parameters/timeParam'
+        - $ref: '#/x-components/parameters/parametersParam'
+        - $ref: '#/x-components/parameters/paramDstNr'
+        - $ref: '#/x-components/parameters/formatParam'
+        - $ref: '#/x-components/parameters/sourceParam'
+        - $ref: '#/x-components/parameters/verticalInterpol'
+        - $ref: '#/x-components/parameters/temporalInterpol'
+        - $ref: '#/x-components/parameters/ensSelect'
+        - $ref: '#/x-components/parameters/clusterSelect'
+        - $ref: '#/x-components/parameters/timeout'
+      produces:
+        - text/plain; charset=UTF-8
+        - text/html
+        - text/csv
+        - application/json
+        - application/xml
+      responses:
+        '200':
+          description: Ok, data delivery
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/UnauthorizedText'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/NotFoundText'
+      security:
+        - BasicAuth: []
+      summary: Get data for one or more didok service station by ID or abbreviation
   /{time}:
-    parameters:
-      - $ref: '#/x-components/parameters/timeParam'
-      - in: body
-        name: request_string
-        description: Everything you would specify in the get request after the time parameter
-        schema:
-          type: string
-          example: 't_2m:C/47.412,9.339927/csv'
     post:
       consumes:
-        - text/plain
+        - application/json
       produces:
         - text/plain; charset=utf-8
         - text/html
         - text/csv
         - application/json
         - application/xml
-      parameters: []
+      parameters:
+        - $ref: '#/x-components/parameters/timeParam'
+        - $ref: '#/x-components/parameters/PostParameters'
+        - $ref: '#/x-components/parameters/sourceParam'
+        - $ref: '#/x-components/parameters/verticalInterpol'
+        - $ref: '#/x-components/parameters/temporalInterpol'
+        - $ref: '#/x-components/parameters/ensSelect'
+        - $ref: '#/x-components/parameters/clusterSelect'
+        - $ref: '#/x-components/parameters/timeout'
       responses:
         '200':
           description: Ok, data delivery
@@ -196,7 +228,7 @@ paths:
             $ref: '#/definitions/NotFoundText'
       security:
         - BasicAuth: []
-      summary: Get data by POST request. Useful for large queries (GET URL > 1000 characters)
+      summary: Get data by POST request (useful especially for large point lists)
   /user_stats:
     get:
       produces:
@@ -235,6 +267,7 @@ definitions:
     maxItems: 2
     minItems: 2
     type: array
+    example: [47, 8.5]
   NotFoundText:
     type: string
   TimePoint:
@@ -259,6 +292,68 @@ securityDefinitions:
     type: basic
 x-components:
   parameters:
+    PostParameters:
+      in: body
+      description: >
+        **Request Body**
+
+        - **Parameters** are given as list of strings
+
+
+        - **Locations** can be given as `"lat,lon"` strings, zip codes, `didok IDs` or `didok abbreviations` (or a mix of these)
+
+        - **Format** is one of the generally accepted format strings
+      schema:
+        type: object
+        required:
+          - parameters
+          - location_list
+          - format
+        properties:
+          parameters:
+            type: array
+            style: simple
+            minItems: 1
+            required: true
+            items:
+              pattern: '^[a-zA-Z]+[a-zA-Z0-9_\-]*:[a-zA-Z0-9_\-]+$'
+              type: string
+              enum:
+                - 't_2m:C'
+                - 't_0m:C'
+                - 'precip_1h:mm'
+                - 'prob_precip_1h:p'
+                - 'wind_speed_10m:ms'
+                - 'wind_gusts_10m:ms'
+                - 'relative_humidity_2m:p'
+                - 'weather_symbol_1h:idx'
+                - 'frost_depth:cm'
+                - 'fresh_snow_1h:mm'
+                - 'snow_depth:cm'
+                - 'sunshine_duration_1h:min'
+                - 'global_rad:W'
+                - 'dew_or_rime:idx'
+            example: ['t_2m:C', 'precip_1h:mm']
+          location_list:
+            required: true
+            description: List of points Points can be given as lat/lon pairs, zip codes, didok ids or didok abbreviations.
+            type: array
+            items:
+              type: string
+            example: ["47,8.5", "postal_CH9014", "didok_8501014", "didok_BSEU"]
+            minItems: 1
+          format:
+            required: true
+            type: string
+            enum:
+              - 'csv'
+              - 'xml'
+              - 'json'
+              - 'png'
+              - 'netcdf'
+              - 'html'
+              - 'grads'
+
     formatParam:
       description: >
         **Ouput format**
@@ -268,19 +363,19 @@ x-components:
       name: format
       required: true
       enum:
-        - csv
-        - xml
-        - json
-        - png
-        - netcdf
-        - html
-        - grads
+        - 'csv'
+        - 'xml'
+        - 'json'
+        - 'png'
+        - 'netcdf'
+        - 'html'
+        - 'grads'
       type: string
     parametersParam:
       description: >
         **Parameters of interest**
 
-        for a single location you can request more than one parameter with a single query
+        for a single location you can request more than one parameter inside a single query
 
         (for all available paramaters see [list of available parameters](http://api.meteomatics.com/Available-Parameters.html))
       explode: false
@@ -375,7 +470,7 @@ x-components:
         minimum: -180
         maximum: 180
       description: >
-        **Latitude in decimal degrees** ([WGS-84 format](https://en.wikipedia.org/wiki/World_Geodetic_System#A_new_World_Geodetic_System:_WGS_84))
+        **Latitude in decimal degrees** ([WGS-84 format](https://epsg.io/4326))
       example: 47.412
     lon:
       in: path
@@ -386,7 +481,7 @@ x-components:
         minimum: -90
         type: number
       description: >
-        **Longitude in decimal degrees** ([WGS-84 format](https://en.wikipedia.org/wiki/World_Geodetic_System#A_new_World_Geodetic_System:_WGS_84))
+        **Longitude in decimal degrees** ([WGS-84 format](https://epsg.io/4326))
       example: 9.339927
     locationTopLeft:
       description: >
@@ -435,7 +530,11 @@ x-components:
       example: 600
     paramZipCodes:
       description: >
-        **Zip codes** (e.g. `postal_DE10117+postal_CH9014`)
+        **Zip codes**
+
+        Separate multiple values by '+'
+
+        (e.g. `postal_DE10117+postal_CH9014`)
       in: path
       name: zip_codes
       required: true
@@ -443,13 +542,28 @@ x-components:
       collectionFormat: ssv
       items:
         type: string
+        pattern: '^postal_{[A-Z]:2}[0-9]+$'
       examples:
         stgallen:
           'postal_CH9014'
         berlin:
           'postal_DE10117'
         berline&stgallen:
-          'postal_DE10117,postal_CH9014'
+          'postal_DE10117+postal_CH9014'
+    paramDstNr:
+      description: >
+        **Dst-Nr.** or **Dst-Abk.** as used in https://opentransportdata.swiss/de/dataset/didok
+
+        Separate multiple values by '+'
+
+        (e.g. `didok_8594953+didok_BSEU`)
+      in: path
+      name: dst_id
+      required: true
+      oneOf:
+        - type: integer
+        - type: string
+      example: 8501019
     sourceParam:
       description: >
         Specify the source
