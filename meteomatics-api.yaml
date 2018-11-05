@@ -128,7 +128,48 @@ paths:
       security:
         - BasicAuth: []
       summary: Get data for an area with fixed size
-  /{time}/{parameters}/{zip_codes}/{format}:
+  /{time_list}/{parameters}/{lat_lon_list}/{format}:
+    parameters:
+      - $ref: '#/x-components/parameters/time_listParam'
+      - $ref: '#/x-components/parameters/parametersParam'
+      - $ref: '#/x-components/parameters/lat_lon_list'
+      - $ref: '#/x-components/parameters/formatParam'
+      - $ref: '#/x-components/parameters/sourceParam'
+      - $ref: '#/x-components/parameters/verticalInterpol'
+      - $ref: '#/x-components/parameters/temporalInterpol'
+      - $ref: '#/x-components/parameters/ensSelect'
+      - $ref: '#/x-components/parameters/clusterSelect'
+      - $ref: '#/x-components/parameters/timeout'
+      - name: route
+        in: query
+        required: true
+        type: string
+
+    get:
+      produces:
+        - text/plain; charset=utf-8
+        - text/html
+        - text/csv
+        - application/json
+        - application/xml
+      parameters: []
+      responses:
+        '200':
+          description: Ok, data delivery
+          schema:
+            type: file
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/UnauthorizedText'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/NotFoundText'
+      security:
+        - BasicAuth: []
+      summary: Get data for a route, i.e. a list of points in time and a list of locations.
+  /{time}/{parameters}/postal_{zip_code}/{format}:
     get:
       parameters:
         - $ref: '#/x-components/parameters/timeParam'
@@ -294,6 +335,7 @@ x-components:
   parameters:
     PostParameters:
       in: body
+      name: "Body"
       description: >
         **Request Body**
 
@@ -461,6 +503,37 @@ x-components:
           value: '2018-07-05T00:00:00ZP1D:PT1H'
         time-range-end:
           value: '2018-07-05T00:00:00Z--2018-07-06T00:00:00Z:PT1H'
+    time_listParam:
+      description: >
+        **Time specification according to ISO-8601**
+
+        ***
+
+        ***Times are in UTC by default.*** (`01:00:00Z`)
+
+        ---
+
+        ***
+
+        *You can specify a different timezone by its offset* (e.g. `01:00:00+02:00` for CEST)
+
+        (see [the docs for more details](http://api.meteomatics.com/API-Request.html#time-description))
+      in: path
+      name: time_list
+      required: true
+      schema:
+        oneOf:
+          - $ref: '#/definitions/TimePoint'
+          - $ref: '#/definitions/TimeRangePeriodLength'
+          - $ref: '#/definitions/TimeRangePeriodEnd'
+      example: '2018-07-05T00:00:00Z'
+      examples:
+        time-point:
+          value: '2018-07-05T00:00:00Z'
+        time-range:
+          value: '2018-07-05T00:00:00ZP1D:PT1H'
+        time-range-end:
+          value: '2018-07-05T00:00:00Z--2018-07-06T00:00:00Z:PT1H'
     lat:
       in: path
       name: lat
@@ -475,6 +548,17 @@ x-components:
     lon:
       in: path
       name: lon
+      required: true
+      schema:
+        maximum: 90
+        minimum: -90
+        type: number
+      description: >
+        **Longitude in decimal degrees** ([WGS-84 format](https://epsg.io/4326))
+      example: 9.339927
+    lat_lon_list:
+      in: path
+      name: lat_lon_list
       required: true
       schema:
         maximum: 90
@@ -536,7 +620,7 @@ x-components:
 
         (e.g. `postal_DE10117+postal_CH9014`)
       in: path
-      name: zip_codes
+      name: zip_code
       required: true
       type: array
       collectionFormat: ssv
@@ -545,9 +629,9 @@ x-components:
         pattern: '^postal_{[A-Z]:2}[0-9]+$'
       examples:
         stgallen:
-          'postal_CH9014'
+          'CH9014'
         berlin:
-          'postal_DE10117'
+          'DE10117'
         berline&stgallen:
           'postal_DE10117+postal_CH9014'
     paramDstNr:
