@@ -26,7 +26,6 @@ paths:
       - $ref: '#/x-components/parameters/lon'
       - $ref: '#/x-components/parameters/formatParam'
       - $ref: '#/x-components/parameters/sourceParam'
-      - $ref: '#/x-components/parameters/verticalInterpol'
       - $ref: '#/x-components/parameters/temporalInterpol'
       - $ref: '#/x-components/parameters/ensSelect'
       - $ref: '#/x-components/parameters/clusterSelect'
@@ -64,7 +63,6 @@ paths:
       - $ref: '#/x-components/parameters/resolutionLatLon'
       - $ref: '#/x-components/parameters/formatParam'
       - $ref: '#/x-components/parameters/sourceParam'
-      - $ref: '#/x-components/parameters/verticalInterpol'
       - $ref: '#/x-components/parameters/temporalInterpol'
       - $ref: '#/x-components/parameters/ensSelect'
       - $ref: '#/x-components/parameters/clusterSelect'
@@ -101,7 +99,6 @@ paths:
       - $ref: '#/x-components/parameters/y_widthParam'
       - $ref: '#/x-components/parameters/formatParam'
       - $ref: '#/x-components/parameters/sourceParam'
-      - $ref: '#/x-components/parameters/verticalInterpol'
       - $ref: '#/x-components/parameters/temporalInterpol'
       - $ref: '#/x-components/parameters/ensSelect'
       - $ref: '#/x-components/parameters/clusterSelect'
@@ -135,7 +132,6 @@ paths:
       - $ref: '#/x-components/parameters/lat_lon_list'
       - $ref: '#/x-components/parameters/formatParam'
       - $ref: '#/x-components/parameters/sourceParam'
-      - $ref: '#/x-components/parameters/verticalInterpol'
       - $ref: '#/x-components/parameters/temporalInterpol'
       - $ref: '#/x-components/parameters/ensSelect'
       - $ref: '#/x-components/parameters/clusterSelect'
@@ -177,7 +173,6 @@ paths:
         - $ref: '#/x-components/parameters/paramZipCodes'
         - $ref: '#/x-components/parameters/formatParam'
         - $ref: '#/x-components/parameters/sourceParam'
-        - $ref: '#/x-components/parameters/verticalInterpol'
         - $ref: '#/x-components/parameters/temporalInterpol'
         - $ref: '#/x-components/parameters/ensSelect'
         - $ref: '#/x-components/parameters/clusterSelect'
@@ -210,7 +205,6 @@ paths:
         - $ref: '#/x-components/parameters/paramDstNr'
         - $ref: '#/x-components/parameters/formatParam'
         - $ref: '#/x-components/parameters/sourceParam'
-        - $ref: '#/x-components/parameters/verticalInterpol'
         - $ref: '#/x-components/parameters/temporalInterpol'
         - $ref: '#/x-components/parameters/ensSelect'
         - $ref: '#/x-components/parameters/clusterSelect'
@@ -249,7 +243,6 @@ paths:
         - $ref: '#/x-components/parameters/timeParam'
         - $ref: '#/x-components/parameters/PostParameters'
         - $ref: '#/x-components/parameters/sourceParam'
-        - $ref: '#/x-components/parameters/verticalInterpol'
         - $ref: '#/x-components/parameters/temporalInterpol'
         - $ref: '#/x-components/parameters/ensSelect'
         - $ref: '#/x-components/parameters/clusterSelect'
@@ -565,7 +558,13 @@ x-components:
         minimum: -90
         type: number
       description: >
-        **Longitude in decimal degrees** ([WGS-84 format](https://epsg.io/4326))
+        **List of lat,lon pairs, separated by '+'**
+
+        ***
+
+        ***Must have the same length as the given time list***
+
+        ---
       example: 9.339927
     locationTopLeft:
       description: >
@@ -685,18 +684,6 @@ x-components:
         - 'noaa-hycom'
         - 'noaa-swpc'
         - 'ukmo-euro4'
-    verticalInterpol:
-      description: >
-        Vertical interpolation selection (for model *mix* only)
-
-        ***This is an advanced parameter. Please make sure you are aware of its implications before using it.***
-      type: string
-      in: query
-      required: false
-      name: vertical_interpolation
-      enum:
-        - 'none'
-        - 'gradient_interpolation'
     temporalInterpol:
       description: >
         Temporal interpolation selection (for observational data only)
