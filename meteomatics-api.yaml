@@ -1,4 +1,4 @@
-swagger: "2.0"
+openapi: 3.0.0
 info:
   contact:
     email: support@meteomatics.com
@@ -6,357 +6,695 @@ info:
     url: 'http://api.meteomatics.com'
   description: >
     **The awesome API in the Weather World**
-
-    ---
-
-    *This document is still under development and we take no responsibility for its correctness*
   title: Meteomatics Weather API
-  version: 0.2.0
-host: api.meteomatics.com
-basePath: /
-schemes:
-  - http
-  - https
+  version: 1.0.0
+
+servers:
+  - url: https://api.meteomatics.com
+  - url: http://api.meteomatics.com
 
 paths:
-  /{time}/{parameters}/{latslons}/{format}:
+  /{validdatetime}/{parameters}/{location}/{format}/:
     get:
       summary: Get data for one or more coordinates.
       parameters:
-        - $ref: '#/x-components/parameters/timeParam'
-        - $ref: '#/x-components/parameters/parameters_in_query'
-        - $ref: '#/x-components/parameters/latslons_in_path'
-        - $ref: '#/x-components/parameters/formatParam'
-        - $ref: '#/x-components/parameters/source_in_query'
-        - $ref: '#/x-components/parameters/temporalInterpol'
-        - $ref: '#/x-components/parameters/ensSelect'
-        - $ref: '#/x-components/parameters/clusterSelect'
-        - $ref: '#/x-components/parameters/timeout'
-        - $ref: '#/x-components/parameters/init_date_in_query'
-      produces:
-        - text/plain; charset=utf-8
-        - text/html
-        - text/csv
-        - application/json
-        - application/xml
+        - name: validdatetime
+          in: path
+          required: true
+          $ref: '#/components/parameters/timeParam'
+
+        - name: parameters
+          in: path
+          required: true
+          $ref: '#/components/parameters/parameters_in_path'
+
+        - name: location
+          in: path
+          required: true
+          schema:
+            oneOf:
+              - $ref: '#/components/parameters/latslons_in_path'
+              - $ref: '#/components/parameters/lines_in_path'
+          description: |
+            You must provide either `latslons_in_path` or `lines_in_path`, but not both.
+          
+        - name: format
+          in: path
+          required: true
+          $ref: '#/components/parameters/formatParam'
+          
+        - name: source
+          $ref: '#/components/parameters/source_in_query'
+        
+        - name: ens_select
+          $ref: '#/components/parameters/ensSelect'
+        
+        - name: cluster_select
+          $ref: '#/components/parameters/clusterSelect'
+        
+        - name: timeout
+          $ref: '#/components/parameters/timeout'
+        
+        - name: temporal_interpolation
+          $ref: '#/components/parameters/temporalInterpol'
+
+        - name: init_date
+          $ref: '#/components/parameters/init_date_in_query'
+
+        - name: on_invalid
+          $ref: '#/components/parameters/behavior_on_invalid'
+  
       responses:
         '200':
-          description: Ok, data delivery
-          schema:
-            $ref: '#/definitions/CsvOkRequest'
+          description: Ok
+          content:
+            text/plain; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/CsvOkRequest'
+            text/html:
+              schema:
+                $ref: '#/components/schemas/CsvOkRequest'
+            text/csv:
+              schema:
+                $ref: '#/components/schemas/CsvOkRequest'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CsvOkRequest'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/CsvOkRequest'
         '400':
           description: Bad request
-          schema:
-            $ref: '#/definitions/BadRequestText'
+          content:
+            text/plain; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/BadRequestText'
+          $ref: '#/components/schemas/BadRequestText'
         '401':
           description: Unauthorized
-          schema:
-            $ref: '#/definitions/UnauthorizedText'
+          content:
+            text/plain; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedText'
         '404':
           description: Not found
-          schema:
-            $ref: '#/definitions/NotFoundText'
+          content:
+            text/plain; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/NotFoundText'
+
       security:
         - BasicAuth: []
 
-  /{time}/{parameter}/{boundingbox}:{resolutionLatLon}/{format}:
+  /{validdatetime}/{parameters}/{boundingbox}:{gridOption}/{format}/:
     get:
       summary: Get data for an area.
       parameters:
-        - $ref: '#/x-components/parameters/timeParam'
-        - $ref: '#/x-components/parameters/parameter_in_path'
-        - $ref: '#/x-components/parameters/bounding_box_in_path'
-        - $ref: '#/x-components/parameters/resolutionLatLon_in_path'
-        - $ref: '#/x-components/parameters/formatParam'
-        - $ref: '#/x-components/parameters/source_in_query'
-        - $ref: '#/x-components/parameters/temporalInterpol'
-        - $ref: '#/x-components/parameters/ensSelect'
-        - $ref: '#/x-components/parameters/clusterSelect'
-        - $ref: '#/x-components/parameters/timeout'
-        - $ref: '#/x-components/parameters/init_date_in_query'
-      produces:
-        - text/plain; charset=UTF-8
-        - text/csv
-        - image/png
-        - application/json
-        - application/xml
-      responses:
-        '200':
-          description: Ok, data delivery
-        '401':
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/UnauthorizedText'
-        '404':
-          description: Not found
-          schema:
-            $ref: '#/definitions/NotFoundText'
-      security:
-        - BasicAuth: []
-
-  /{time}/{parameter}/{boundingbox}:{pointsLatLon}/{format}:
-    get:
-      summary: Get data for an area with fixed size.
-      parameters:
-        - $ref: '#/x-components/parameters/timeParam'
-        - $ref: '#/x-components/parameters/parameter_in_path'
-        - $ref: '#/x-components/parameters/bounding_box_in_path'
-        - $ref: '#/x-components/parameters/pointsLatLon_in_path'
-        - $ref: '#/x-components/parameters/formatParam'
-        - $ref: '#/x-components/parameters/source_in_query'
-        - $ref: '#/x-components/parameters/temporalInterpol'
-        - $ref: '#/x-components/parameters/ensSelect'
-        - $ref: '#/x-components/parameters/clusterSelect'
-        - $ref: '#/x-components/parameters/timeout'
-        - $ref: '#/x-components/parameters/init_date_in_query'
-      produces:
-        - text/plain; charset=UTF-8
-        - text/csv
-        - image/png
-        - application/json
-        - application/xml
-      responses:
-        '200':
-          description: Ok, data delivery
-        '401':
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/UnauthorizedText'
-        '404':
-          description: Not found
-          schema:
-            $ref: '#/definitions/NotFoundText'
-      security:
-        - BasicAuth: []
-
-  /{time_list}/{parameters}/{latslons}/{format}:
-    get:
-      summary: Get data for a route, i.e. a list of points in time and a list of locations.
-      parameters:
-        - $ref: '#/x-components/parameters/time_listParam'
-        - $ref: '#/x-components/parameters/parameters_in_query'
-        - $ref: '#/x-components/parameters/latslons_in_path'
-        - $ref: '#/x-components/parameters/formatParam'
-        - $ref: '#/x-components/parameters/source_in_query'
-        - $ref: '#/x-components/parameters/temporalInterpol'
-        - $ref: '#/x-components/parameters/ensSelect'
-        - $ref: '#/x-components/parameters/clusterSelect'
-        - $ref: '#/x-components/parameters/timeout'
-        - $ref: '#/x-components/parameters/init_date_in_query'
-        - name: route
-          in: query
+        - name: validdatetime
+          in: path
           required: true
-          type: string
-      produces:
-        - text/plain; charset=utf-8
-        - text/csv
-        - application/json
-        - application/xml
+          $ref: '#/components/parameters/timeParam'
+
+        - name: parameters
+          in: path
+          required: true
+          $ref: '#/components/parameters/parameters_in_path'
+
+        - name: boundingbox
+          in: path
+          required: true
+          $ref: '#/components/parameters/bounding_box_in_path'
+          
+        - name: gridOption
+          in: path
+          required: true
+          schema:
+            oneOf:
+            - $ref: '#/components/parameters/resolutionLatLon_in_path'
+            - $ref: '#/components/parameters/pointsLatLon_in_path'
+
+        - name: format
+          in: path
+          required: true
+          $ref: '#/components/parameters/formatParam'
+          
+        - name: source
+          $ref: '#/components/parameters/source_in_query'
+        
+        - name: ens_select
+          $ref: '#/components/parameters/ensSelect'
+        
+        - name: cluster_select
+          $ref: '#/components/parameters/clusterSelect'
+        
+        - name: timeout
+          $ref: '#/components/parameters/timeout'
+        
+        - name: temporal_interpolation
+          $ref: '#/components/parameters/temporalInterpol'
+
+        - name: init_date
+          $ref: '#/components/parameters/init_date_in_query'
+
+        - name: on_invalid
+          $ref: '#/components/parameters/behavior_on_invalid'
+    
       responses:
         '200':
-          description: Ok, data delivery
-          schema:
-            type: file
+          description: Ok
+          content:
+            text/plain; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/CsvOkRequest'
+            text/html:
+              schema:
+                $ref: '#/components/schemas/CsvOkRequest'
+            text/csv:
+              schema:
+                $ref: '#/components/schemas/CsvOkRequest'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CsvOkRequest'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/CsvOkRequest'
         '401':
           description: Unauthorized
-          schema:
-            $ref: '#/definitions/UnauthorizedText'
+          content:
+            text/plain; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedText'
         '404':
           description: Not found
-          schema:
-            $ref: '#/definitions/NotFoundText'
+          content:
+            text/plain; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/NotFoundText'
+    
       security:
         - BasicAuth: []
 
-  /{time}/{parameters}/postal_{zip_code}/{format}:
+  /{validdatetime}/{parameters}/{polygons}/{format}/:
+    get:
+      summary: Get aggregated data for one or more polygons.
+      parameters:
+        - name: validdatetime
+          in: path
+          required: true
+          $ref: '#/components/parameters/timeParam'
+
+        - name: parameters
+          in: path
+          required: true
+          $ref: '#/components/parameters/parameters_in_path'
+
+        - name: polygons
+          in: path
+          required: true
+          $ref: '#/components/parameters/polygons_in_path'
+
+        - name: format
+          in: path
+          required: true
+          $ref: '#/components/parameters/formatParam'
+          
+        - name: source
+          $ref: '#/components/parameters/source_in_query'
+        
+        - name: ens_select
+          $ref: '#/components/parameters/ensSelect'
+        
+        - name: cluster_select
+          $ref: '#/components/parameters/clusterSelect'
+        
+        - name: timeout
+          $ref: '#/components/parameters/timeout'
+        
+        - name: temporal_interpolation
+          $ref: '#/components/parameters/temporalInterpol'
+
+        - name: init_date
+          $ref: '#/components/parameters/init_date_in_query'
+        
+        - name: optionals
+          $ref: '#/components/parameters/polygons_optionals'
+
+        - name: on_invalid
+          $ref: '#/components/parameters/behavior_on_invalid'
+
+      responses:
+        '200':
+          description: Ok
+          content:
+            text/csv:
+              schema:
+                $ref: '#/components/schemas/CsvOkRequest'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CsvOkRequest'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/CsvOkRequest'
+        '401':
+          description: Unauthorized
+          content:
+            text/plain; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedText'
+        '404':
+          description: Not found
+          content:
+            text/plain; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/NotFoundText'
+      
+      security:
+        - BasicAuth: []
+  
+  /{validdatetime}/{parameters}/{zip_code}/{format}/:
     get:
       summary: Get data for one or more zip codes.
       parameters:
-        - $ref: '#/x-components/parameters/timeParam'
-        - $ref: '#/x-components/parameters/parameters_in_query'
-        - $ref: '#/x-components/parameters/paramZipCodes'
-        - $ref: '#/x-components/parameters/formatParam'
-        - $ref: '#/x-components/parameters/source_in_query'
-        - $ref: '#/x-components/parameters/temporalInterpol'
-        - $ref: '#/x-components/parameters/ensSelect'
-        - $ref: '#/x-components/parameters/clusterSelect'
-        - $ref: '#/x-components/parameters/timeout'
-      produces:
-        - text/plain; charset=UTF-8
-        - text/html
-        - text/csv
-        - application/json
-        - application/xml
+        - name: validdatetime
+          in: path
+          required: true
+          $ref: '#/components/parameters/timeParam'
+
+        - name: parameters
+          in: path
+          required: true
+          $ref: '#/components/parameters/parameters_in_path'
+
+        - name: zip_code
+          in: path
+          required: true
+          $ref: '#/components/parameters/paramZipCodes'
+
+        - name: format
+          in: path
+          required: true
+          $ref: '#/components/parameters/formatParam'
+          
+        - name: source
+          $ref: '#/components/parameters/source_in_query'
+        
+        - name: ens_select
+          $ref: '#/components/parameters/ensSelect'
+        
+        - name: cluster_select
+          $ref: '#/components/parameters/clusterSelect'
+        
+        - name: timeout
+          $ref: '#/components/parameters/timeout'
+        
+        - name: temporal_interpolation
+          $ref: '#/components/parameters/temporalInterpol'
+
+        - name: init_date
+          $ref: '#/components/parameters/init_date_in_query'
+        
+        - name: route
+          $ref: '#/components/parameters/route_optional'
+
+        - name: on_invalid
+          $ref: '#/components/parameters/behavior_on_invalid'
+
       responses:
         '200':
-          description: Ok, data delivery
-        '401':
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/UnauthorizedText'
+          description: Ok
+          content:
+            text/plain; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/CsvOkRequest'
+            text/html:
+              schema:
+                $ref: '#/components/schemas/CsvOkRequest'
+            text/csv:
+              schema:
+                $ref: '#/components/schemas/CsvOkRequest'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CsvOkRequest'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/CsvOkRequest'
         '404':
           description: Not found
-          schema:
-            $ref: '#/definitions/NotFoundText'
+          content:
+            text/plain; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/NotFoundText'
+
       security:
         - BasicAuth: []
 
-  /{time}/{parameters}/didok_{dst_id}/{format}:
+  /{validdatetime}/{parameters}/didok_{dst_id}/{format}/:
     get:
       summary: Get data for one or more didok service station by ID or abbreviation.
       parameters:
-        - $ref: '#/x-components/parameters/timeParam'
-        - $ref: '#/x-components/parameters/parameters_in_query'
-        - $ref: '#/x-components/parameters/paramDstNr'
-        - $ref: '#/x-components/parameters/formatParam'
-        - $ref: '#/x-components/parameters/source_in_query'
-        - $ref: '#/x-components/parameters/temporalInterpol'
-        - $ref: '#/x-components/parameters/ensSelect'
-        - $ref: '#/x-components/parameters/clusterSelect'
-        - $ref: '#/x-components/parameters/timeout'
-      produces:
-        - text/plain; charset=UTF-8
-        - text/html
-        - text/csv
-        - application/json
-        - application/xml
+        - name: validdatetime
+          $ref: '#/components/parameters/timeParam'
+
+        - name: parameters
+          $ref: '#/components/parameters/parameters_in_path'
+
+        - name: didok_{dst_id}
+          $ref: '#/components/parameters/paramDstNr'
+
+        - name: format
+          $ref: '#/components/parameters/formatParam'
+        
+        - name: source
+          $ref: '#/components/parameters/source_in_query'
+        
+        - name: ens_select
+          $ref: '#/components/parameters/ensSelect'
+        
+        - name: cluster_select
+          $ref: '#/components/parameters/clusterSelect'
+        
+        - name: timeout
+          $ref: '#/components/parameters/timeout'
+        
+        - name: temporal_interpolation
+          $ref: '#/components/parameters/temporalInterpol'
+
+        - name: init_date
+          $ref: '#/components/parameters/init_date_in_query'
+        
+        - name: route
+          $ref: '#/components/parameters/route_optional'
+
+        - name: on_invalid
+          $ref: '#/components/parameters/behavior_on_invalid'
+      
       responses:
         '200':
-          description: Ok, data delivery
+          description: Ok
+          content:
+            text/plain; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/CsvOkRequest'
+            text/html:
+              schema:
+                $ref: '#/components/schemas/CsvOkRequest'
+            text/csv:
+              schema:
+                $ref: '#/components/schemas/CsvOkRequest'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CsvOkRequest'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/CsvOkRequest'
         '401':
           description: Unauthorized
-          schema:
-            $ref: '#/definitions/UnauthorizedText'
+          content:
+            text/plain; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedText'
         '404':
           description: Not found
-          schema:
-            $ref: '#/definitions/NotFoundText'
+          content:
+            text/plain; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/NotFoundText'
+    
       security:
         - BasicAuth: []
 
-  /{time}:
+  /{validdatetime}:
     post:
       summary: Get data by POST request (useful especially for large point lists).
+      
       parameters:
-        - $ref: '#/x-components/parameters/timeParam'
-        - $ref: '#/x-components/parameters/PostParameters'
-        - $ref: '#/x-components/parameters/source_in_query'
-        - $ref: '#/x-components/parameters/temporalInterpol'
-        - $ref: '#/x-components/parameters/ensSelect'
-        - $ref: '#/x-components/parameters/clusterSelect'
-        - $ref: '#/x-components/parameters/timeout'
-      consumes:
-        - application/json
-      produces:
-        - text/plain; charset=utf-8
-        - text/html
-        - text/csv
-        - application/json
-        - application/xml
+        
+        - name: validdatetime
+          $ref: '#/components/parameters/timeParam'
+      
+      requestBody:
+        description: >
+          **Request Body**
+
+          - **Parameters** are given as a list of strings.
+
+          - **Locations** can be given as `"lat,lon"` strings, zip codes, `didok IDs` or `didok abbreviations` (or a mix of these).
+
+          - **Format** is one of the generally accepted format strings.
+          
+          - Other optional parameters are available as they would be for GET requests.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - parameters
+                - location
+                - format
+              properties:
+                
+                parameters:
+                  $ref: '#/components/parameters/parameters_in_path'
+                
+                location:
+                    oneOf:
+                      - $ref: '#/components/parameters/latslons_in_path'
+                      - $ref: '#/components/parameters/lines_in_path'
+                    description: |
+                      You must provide either `latslons_in_path` or `lines_in_path`, but not both.
+                
+                format:
+                  $ref: '#/components/parameters/formatParam'
+
+                source:
+                  $ref: '#/components/parameters/source_in_query'
+
+                temporal_interpolation:
+                  $ref: '#/components/parameters/temporalInterpol'
+        
+                ens_select:
+                  $ref: '#/components/parameters/ensSelect'
+        
+                cluster_select:
+                  $ref: '#/components/parameters/clusterSelect'
+        
+                timeout:
+                  $ref: '#/components/parameters/timeout'
+
+                init_date:
+                  $ref: '#/components/parameters/init_date_in_query'
+
+                on_invalid:
+                  $ref: '#/components/parameters/behavior_on_invalid'
+
       responses:
         '200':
-          description: Ok, data delivery
-          schema:
-            type: file
+          description: Ok
+          content:
+            text/plain; charset=utf-8:
+              schema:
+                $ref: '#/components/schemas/CsvOkRequest'
+            text/html:
+              schema:
+                $ref: '#/components/schemas/CsvOkRequest'
+            text/csv:
+              schema:
+                $ref: '#/components/schemas/CsvOkRequest'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CsvOkRequest'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/CsvOkRequest'
         '401':
           description: Unauthorized
-          schema:
-            $ref: '#/definitions/UnauthorizedText'
+          content:
+            text/plain; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedText'
         '404':
           description: Not found
-          schema:
-            $ref: '#/definitions/NotFoundText'
+          content:
+            text/plain; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/NotFoundText'
+
       security:
         - BasicAuth: []
 
-  /get_init_date:
+
+  /get_init_date/{model}/{validdate}/{parameter_list}:
     get:
       summary: Find out when the data was computed.
       parameters:
-          - $ref: '#/x-components/parameters/models_in_get_init_date_query'
-          - $ref: '#/x-components/parameters/parameters_in_query'
-          - $ref: '#/x-components/parameters/valid_date_in_query'
-      produces:
-          - text/plain; charset=UTF-8
+        - name: model
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/AllAvailableModels'
+        
+        - name: validdate
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/parameters/valid_date_in_query'
+    
+        - name: parameter_list
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/parameters/parameters_in_query'
+          
       responses:
         '200':
-            description: Ok, data delivery
+          description: Ok
+          content:
+            text/plain; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/CsvOkRequest'
         '401':
           description: Unauthorized
-          schema:
-            $ref: '#/definitions/UnauthorizedText'
+          content:
+            text/plain; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedText'
         '404':
           description: Not found
-          schema:
-            $ref: '#/definitions/NotFoundText'
+          content:
+            text/plain; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/NotFoundText'
+    
       security:
-          - BasicAuth: []
+        - BasicAuth: []
 
-  /get_time_range:
+  /get_time_range/{source}/{parameter_list}:
     get:
       summary: Find out the available valid dates for one or more parameters within the API.
       parameters:
-        - $ref: '#/x-components/parameters/model_in_query'
-        - $ref: '#/x-components/parameters/parameters_in_query'
-      produces:
-        - text/plain; charset=UTF-8
+        - name: source
+          schema:
+            $ref: '#/components/parameters/source_in_path'
+          in: path
+          required: true
+
+        - name: parameter_list
+          schema:
+            $ref: '#/components/parameters/parameters_in_query'
+          in: path
+          required: true
+
       responses:
         '200':
-          description: Ok, data delivery
+          description: Ok
+          content:
+            text/plain; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/CsvOkRequest'
         '401':
           description: Unauthorized
-          schema:
-            $ref: '#/definitions/UnauthorizedText'
+          content:
+            text/plain; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedText'
         '404':
           description: Not found
-          schema:
-            $ref: '#/definitions/NotFoundText'
+          content:
+            text/plain; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/NotFoundText'
+
       security:
         - BasicAuth: []
 
-  /get_lightning_list:
+  /get_lightning_list/{time_range}/{bounding_box}/{format}:
     get:
       summary: Find out all lightning flashes between the start and end date within the given bounding box.
       parameters:
-        - $ref: '#/x-components/parameters/time_range_in_query'
-        - $ref: '#/x-components/parameters/bounding_box_in_quey'
-        - $ref: '#/x-components/parameters/format_in_get_lightning_list'
-      produces:
-        - text/plain; charset=UTF-8
+        - name: time_range
+          schema:
+            $ref: '#/components/parameters/time_range_in_query'
+          in: path
+          required: true
+        
+        - name: bounding_box
+          schema:
+            $ref: '#/components/parameters/bounding_box_in_query'
+          in: path
+          required: true
+        
+        - name: format
+          schema:
+            $ref: '#/components/parameters/format_in_get_lightning_list'
+          in: path
+          required: true
+
       responses:
         '200':
-          description: Ok, data delivery
+          description: Ok
+          content:
+            text/plain; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/CsvOkRequest'
         '401':
           description: Unauthorized
-          schema:
-            $ref: '#/definitions/UnauthorizedText'
+          content:
+            text/plain; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedText'
         '404':
           description: Not found
-          schema:
-            $ref: '#/definitions/NotFoundText'
+          content:
+            text/plain; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/NotFoundText'
+
       security:
         - BasicAuth: []
 
-  /get_colormap:
+  /get_colormap/{parameter}/{style}/{format}:
     get:
       summary: Get a colormap for a given parameter and a style.
       parameters:
-        - $ref: '#/x-components/parameters/parameter_in_query'
-        - $ref: '#/x-components/parameters/style_in_query'
-        - $ref: '#/x-components/parameters/format_in_get_colormap'
-      produces:
-        - text/plain; charset=UTF-8
+        - name: parameter
+          schema:
+            $ref: '#/components/parameters/parameters_in_query'
+          in: path
+          required: true
+
+        - name: style
+          schema:
+            $ref: '#/components/parameters/styles_in_query'
+          in: path
+          required: true
+        
+        - name: format
+          schema:
+            $ref: '#/components/parameters/format_in_get_colormap'
+          in: path
+          required: true
+  
       responses:
         '200':
-          description: Ok, data delivery
+          description: Ok
+          content:
+            text/csv:
+              schema:
+                $ref: '#/components/schemas/CsvOkRequest'
         '401':
           description: Unauthorized
-          schema:
-            $ref: '#/definitions/UnauthorizedText'
+          content:
+            text/plain; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedText'
         '404':
           description: Not found
-          schema:
-            $ref: '#/definitions/NotFoundText'
+          content:
+            text/plain; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/NotFoundText'
+      
       security:
         - BasicAuth: [ ]
 
@@ -364,54 +702,95 @@ paths:
     get:
       summary: Get a list of available weather stations matching one or more conditions.
       parameters:
-        - $ref: '#/x-components/parameters/location_in_query'
-        - $ref: '#/x-components/parameters/parameters_in_query'
-        - $ref: '#/x-components/parameters/elevation_in_query'
-        - $ref: '#/x-components/parameters/startdate_in_query'
-        - $ref: '#/x-components/parameters/enddate_in_query'
-      produces:
-        - text/plain; charset=UTF-8
+        - name: location
+          $ref: '#/components/parameters/location_in_query'
+        
+        - name: elevation
+          $ref: '#/components/parameters/elevation_in_query'
+
+        - name: parameters
+          $ref: '#/components/parameters/parameters_in_query'
+
+        - name: startdate
+          $ref: '#/components/parameters/startdate_in_query'
+        
+        - name: enddate
+          $ref: '#/components/parameters/enddate_in_query'
+
       responses:
         '200':
-          description: Ok, data delivery
+          description: Ok
+          content:
+            text/plain; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/CsvOkRequest'
         '401':
           description: Unauthorized
-          schema:
-            $ref: '#/definitions/UnauthorizedText'
+          content:
+            text/plain; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedText'
         '404':
           description: Not found
-          schema:
-            $ref: '#/definitions/NotFoundText'
+          content:
+            text/plain; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/NotFoundText'
+
       security:
         - BasicAuth: [ ]
 
-  /get_isolines:
+  /get_isolines/{parameter}/{boundingbox}:
     get:
       summary: Get isolines for different parameters. The data about isolines is provided in the format GeoJSON.
       parameters:
-        - $ref: '#/x-components/parameters/parameter_in_query'
-        - $ref: '#/x-components/parameters/bbox_in_quey'
-        - $ref: '#/x-components/parameters/datetime_in_query'
-        - $ref: '#/x-components/parameters/isoline_range_in_query'
-        - $ref: '#/x-components/parameters/isoline_values_in_query'
-        - $ref: '#/x-components/parameters/radius_median_filter_in_query'
-        - $ref: '#/x-components/parameters/radius_gaussian_filter_in_query'
-        - $ref: '#/x-components/parameters/isoline_min_points_in_query'
-        - $ref: '#/x-components/parameters/resolution_in_query'
-        - $ref: '#/x-components/parameters/model_in_query'
-      produces:
-        - application/json
+        - name: parameter
+          schema:
+            $ref: '#/components/parameters/parameters_in_path'
+          in: path
+          required: true
+        
+        - name: boundingbox
+          $ref: '#/components/parameters/bounding_box_in_path'
+        
+        - name: datetime
+          $ref: '#/components/parameters/datetime_in_query'
+        
+        - name: isoline_range
+          $ref: '#/components/parameters/isoline_range_in_query'
+        
+        - name: isoline_values
+          $ref: '#/components/parameters/isoline_values_in_query'
+        
+        - name: resolution
+          $ref: '#/components/parameters/resolution_in_query'
+        
+        - name: source
+          $ref: '#/components/parameters/source_in_path'
+
+        - name: radius_median_filter
+          $ref: '#/components/parameters/radius_median_filter_in_query'
+        
+        - name: radius_gaussian_filter
+          $ref: '#/components/parameters/radius_gaussian_filter_in_query'
+        
+        - name: isoline_min_points
+          $ref: '#/components/parameters/isoline_min_points_in_query'
+          
       responses:
         '200':
-          description: Ok, data delivery
-        '401':
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/UnauthorizedText'
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CsvOkRequest'
         '404':
           description: Not found
-          schema:
-            $ref: '#/definitions/NotFoundText'
+          content:
+            text/plain; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/NotFoundText'
+      
       security:
         - BasicAuth: [ ]
 
@@ -419,508 +798,1007 @@ paths:
     get:
       summary: Get high and low regions for different parameters. Regions are provided in the format GeoJSON as points labeled with the corresponding letters H and L.
       parameters:
-        - $ref: '#/x-components/parameters/parameter_in_query'
-        - $ref: '#/x-components/parameters/bbox_in_quey'
-        - $ref: '#/x-components/parameters/datetime_in_query'
-        - $ref: '#/x-components/parameters/isoline_range_in_query'
-        - $ref: '#/x-components/parameters/isoline_values_in_query'
-        - $ref: '#/x-components/parameters/radius_median_filter_in_query'
-        - $ref: '#/x-components/parameters/radius_gaussian_filter_in_query'
-        - $ref: '#/x-components/parameters/resolution_in_query'
-        - $ref: '#/x-components/parameters/model_in_query'
-      produces:
-        - application/json
+        - name: parameter
+          $ref: '#/components/parameters/parameters_in_query'
+        
+        - name: bbox
+          $ref: '#/components/parameters/bounding_box_in_query' 
+        
+        - name: datetime
+          $ref: '#/components/parameters/datetime_in_query'
+        
+        - name: isoline_range
+          $ref: '#/components/parameters/isoline_range_in_query'
+        
+        - name: isoline_values
+          $ref: '#/components/parameters/isoline_values_in_query'
+        
+        - name: resolution
+          $ref: '#/components/parameters/resolution_in_query'
+        
+        - name: source
+          $ref: '#/components/parameters/source_in_path'
+
+        - name: radius_median_filter
+          $ref: '#/components/parameters/radius_median_filter_in_query'
+        
+        - name: radius_gaussian_filter
+          $ref: '#/components/parameters/radius_gaussian_filter_in_query'
+
       responses:
         '200':
-          description: Ok, data delivery
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CsvOkRequest'
         '401':
           description: Unauthorized
-          schema:
-            $ref: '#/definitions/UnauthorizedText'
+          content:
+            text/plain; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedText'
         '404':
           description: Not found
+          content:
+            text/plain; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/NotFoundText'
+      
+      security:
+        - BasicAuth: [ ]
+
+  /get_weather_fronts/{datetime}/{bbox}:
+    get:
+      summary: Get high and low regions for different parameters. Regions are provided in the format GeoJSON as points labeled with the corresponding letters H and L.
+      parameters:
+        - name: datetime
           schema:
-            $ref: '#/definitions/NotFoundText'
+            $ref: '#/components/parameters/datetime_in_query'
+          in: path
+          required: true
+
+        - name: bbox
+          schema:
+            $ref: '#/components/parameters/bounding_box_in_query'
+          in: path
+          required: true
+          
+        - name: source
+          schema:
+            $ref: '#/components/parameters/source_in_path'
+          in: query
+          required: false
+
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CsvOkRequest'
+        '401':
+          description: Unauthorized
+          content:
+            text/plain; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedText'
+        '404':
+          description: Not found
+          content:
+            text/plain; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/NotFoundText'
+      
       security:
         - BasicAuth: [ ]
 
   /user_stats:
     get:
       summary: Get your current usage and limits.
-      produces:
-        - text/plain; charset=UTF-8
       parameters: []
-      security:
-        - BasicAuth: []
+
       responses:
         '200':
           description: Ok
+          content:
+            text/plain; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/CsvOkRequest'
         '401':
           description: Unauthorized
-          schema:
-            $ref: '#/definitions/UnauthorizedText'
-
+          content:
+            text/plain; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedText'
+      
+      security:
+        - BasicAuth: []
+          
   /user_stats_json:
     get:
       summary: Get your current usage and limits in json format.
-      produces:
-        - application/json
       parameters: []
+      
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CsvOkRequest'
+        '401':
+          description: Unauthorized
+          content:
+            text/plain; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedText'
+
       security:
         - BasicAuth: []
-      responses:
-        '200':
-          description: Ok
-        '401':
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/UnauthorizedText'
 
-  /wms?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetCapabilities:
-    get:
-      summary: Retrieves metadata about the service, including supported operations and parameters, and a list of the available layers.
-      produces:
-        - application/xml
-      parameters: [ ]
-      security:
-        - BasicAuth: [ ]
-      responses:
-        '200':
-          description: Ok
-        '401':
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/UnauthorizedText'
 
-  /wms?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&FORMAT=image/png:
+  /wms:
     get:
-      summary: Retrieves a map image for a specified area and content.
+      summary: Perform WMS operations based on the request type.
       parameters:
-        - $ref: '#/x-components/parameters/layers_in_query'
-        - $ref: '#/x-components/parameters/styles_in_query'
-        - $ref: '#/x-components/parameters/crs_in_query'
-        - in: query
-          name: bbox
-          description: >
-            Defines the area of the requested data. For EPSG:4326 the boundary box needs to be provided as <lat_min>,<lon_min>,<lat_max>,<lon_max>.
-            For EPSG:3857 the boundary box needs to be provided as <north_min>,<east_min>,<north_max>,<east_max>.
-          type: string
-          pattern: '^-?[0-9]+(.?[0-9]+)?,-?[0-9]+(.?[0-9]+)?,-?[0-9]+(.?[0-9]+)?,-?[0-9]+(.?[0-9]+)?$'
+        - name: SERVICE
+          in: query
           required: true
-        - in: query
-          name: width
-          description: Specifies the width of the requested image.
-          type: integer
-          required: true
-        - in: query
-          name: height
-          description: Specifies the height of the requested image.
-          type: integer
-          required: true
-        - $ref: '#/x-components/parameters/model_in_query'
-        - $ref: '#/x-components/parameters/time_in_query'
-      produces:
-        - image/png
-      security:
-        - BasicAuth: [ ]
-      responses:
-        '200':
-          description: Ok
-        '401':
-          description: Unauthorized
           schema:
-            $ref: '#/definitions/UnauthorizedText'
+            type: string
+            enum: ['WMS']
+          description: Specifies the service type. Must be WMS.
 
-  /wms?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetLegendGraphic&FORMAT=image/png:
-    get:
-      summary: Retrieves a generated legend for a map.
-      parameters:
-        - $ref: '#/x-components/parameters/layers_in_query'
-        - $ref: '#/x-components/parameters/styles_in_query'
-        - in: query
-          name: transparent
-          description: Custom optional parameter to specify whether the background of the legend graphic should be transparent or white.
-          type: string
+        - name: VERSION
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: ['1.3.0']
+          description: Specifies the WMS version. Must be 1.3.0.
+
+        - name: REQUEST
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: ['GetCapabilities', 'GetMap', 'GetLegendGraphic', 'GetFeatureInfo']
+          description: Specifies the WMS operation to perform.
+
+        # Parameters for GetCapabilities
+        - name: FORMAT
+          in: query
           required: false
-          pattern: '^true$|^false$'
-      produces:
-        - image/png
-      security:
-        - BasicAuth: [ ]
+          schema:
+            type: string
+            enum: ['application/xml']
+          description: Used only for GetCapabilities request. Specifies the format of the response.
+
+        # Parameters for GetMap
+        - name: LAYERS
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Used for GetMap and GetLegendGraphic requests. Specifies the layer(s) for the request.
+
+        - name: CRS
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Used for GetMap requests. Specifies the coordinate reference system.
+
+        - name: BBOX
+          in: query
+          required: false
+          schema:
+            type: string
+            pattern: '^-?[0-9]+(\.[0-9]+)?,-?[0-9]+(\.[0-9]+)?,-?[0-9]+(\.[0-9]+)?,-?[0-9]+(\.[0-9]+)?$'
+          description: Used for GetMap and GetFeatureInfo requests. Specifies the bounding box of the requested area.
+
+        - name: WIDTH
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: Used for GetMap requests. Specifies the width of the requested map image.
+
+        - name: HEIGHT
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: Used for GetMap requests. Specifies the height of the requested map image.
+
+        # Parameters for GetFeatureInfo
+        - name: I
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: Used for GetFeatureInfo requests. Specifies the x-coordinate of the pixel.
+
+        - name: J
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: Used for GetFeatureInfo requests. Specifies the y-coordinate of the pixel.
+
+        # Parameters for GetLegendGraphic
+        - name: STYLES
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Used for GetLegendGraphic requests. Specifies the style(s) for the legend graphic.
+
+        - name: TRANSPARENT
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: ['true', 'false']
+          description: Used for GetLegendGraphic requests. Specifies whether the legend background should be transparent.
+
       responses:
         '200':
-          description: Ok
+          description: Successful response based on the WMS operation.
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/CsvOkRequest'
+            image/png:
+              schema:
+                $ref: '#/components/schemas/CsvOkRequest'
+            image/svg+xml:
+              schema:
+                $ref: '#/components/schemas/CsvOkRequest'
+            text/plain; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/CsvOkRequest'
+        '400':
+          description: Bad Request
+          content:
+            text/plain; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/BadRequestText'
         '401':
           description: Unauthorized
-          schema:
-            $ref: '#/definitions/UnauthorizedText'
+          content:
+            text/plain; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedText'
 
-  /wfs?SERVICE=WFS&VERSION=1.0.0&REQUEST=DescribeFeatureType:
+      security:
+        - BasicAuth: []
+
+  /wfs:
     get:
-      summary: Returns a description of feature types supported by the WFS service.
-      produces:
-        - application/xml
+      summary: Perform WFS operations based on the request type.
       parameters:
-        - in: query
-          name: typename
-          description: Specify feature type of interest. (for all available feature types [list of available feature types](http://api.meteomatics.com/wfs?SERVICE=WFS&VERSION=1.0.0&REQUEST=GetCapabilities))
+        - name: SERVICE
+          in: query
           required: true
-          type: string
-          enum:
-            - 'stations_mix-obs'
-            - 'stations_mm-mos'
-            - 'lightnings'
-
-  /wfs?SERVICE=WFS&VERSION=1.0.0&REQUEST=GetCapabilities:
-    get:
-      summary: Generates a metadata document describing a WFS service provided by server as well as valid WFS operations and parameters.
-      produces:
-        - application/xml
-      parameters: [ ]
-      security:
-        - BasicAuth: [ ]
-      responses:
-        '200':
-          description: Ok
-        '401':
-          description: Unauthorized
           schema:
-            $ref: '#/definitions/UnauthorizedText'
+            type: string
+            enum: ['WFS']
+          description: Specifies the service type. Must be WFS.
 
-definitions:
-  BadRequestText:
-    example: 'PNG only supported for grids'
-    type: string
-  CsvOkRequest:
-    type: string
-    example: "validdate;t_2m:C\n2020-01-29T10:42:29Z;8.3"
-  NotFoundText:
-    type: string
-    example: "Parameter t_m:C not available in model mix"
-  UnauthorizedText:
-    example: 'Username/Password Authentication Failed.'
-    type: string
+        - name: VERSION
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: ['1.0.0']
+          description: Specifies the WFS version. Must be 1.0.0.
 
-  LocationPoint:
-    description: Latitude and Longitude in decimal degrees
-    items:
-      type: number
-    maxItems: 2
-    minItems: 2
-    type: array
-    example: [47, 8.5]
-  BoundingBox:
-    example: 47.0,10.0_45.0,15.0
-    pattern: '^-?[0-9]+(.[0-9]+)?,-?[0-9]+(.[0-9]+)?_-?[0-9]+(.[0-9]+)?,-?[0-9]+(.[0-9]+)?$'
-    type: string
+        - name: REQUEST
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: ['DescribeFeatureType', 'GetFeature', 'GetCapabilities']
+          description: Specifies the WFS operation to perform.
 
-  TimePoint:
-    example: '2018-07-05T00:00:00Z'
-    format: date-time
-    type: string
-  TimeRangePeriodEnd:
-    example: '2018-07-05T00:00:00Z--2018-07-06T00:00:00.0Z:PT1H'
-    pattern: >-
-      ^[1-2][0-9]{3}-[01][0-9]-[0-3][0-9](T[0-2][0-9]:[0-2][0-9]:[0-2][0-9](.[0-9]+)?)?Z--[1-2][0-9]{3}-[01][0-9]-[0-3][0-9](T[0-2][0-9]:[0-2][0-9]:[0-2][0-9](.[0-9]+)?)?Z:PT?[0-9]+[DWMYHMS]$
-    type: string
-  TimeRangePeriodLength:
-    example: '2018-07-05T00:00:00ZP1D:PT1H'
-    pattern: >-
-      ^[1-2][0-9]{3}-[01][0-9]-[0-3][0-9](T[0-2][0-9]:[0-2][0-9]:[0-2][0-9](.[0-9]+)?)?ZPT?[0-9]+[DWMYHMS]:PT?[0-9]+[DWMYHMS]$
-    type: string
-
-  AllAvailableModels:
-    type: string
-    enum: &ALLAVAILABLEMODELS
-      - 'at-radar'
-      - 'chc-chirps2'
-      - 'cmc-gem'
-      - 'cz-radar'
-      - 'dk-radar'
-      - 'dlr-corine'
-      - 'dwd-icon-eu'
-      - 'dwd-pollen'
-      - 'dwd-radar-px250'
-      - 'dwd-radar-rx'
-      - 'dwd-radar-wx'
-      - 'ecmwf-cams'
-      - 'ecmwf-cmems'
-      - 'ecmwf-efi'
-      - 'ecmwf-ens-europe'
-      - 'ecmwf-ens-global'
-      - 'ecmwf-ens-cluster'
-      - 'ecmwf-ens-tc'
-      - 'ecmwf-era5'
-      - 'ecmwf-ifs'
-      - 'ecmwf-ifs-mars'
-      - 'ecmwf-mmsf'
-      - 'ecmwf-vareps'
-      - 'ecmwf-wam'
-      - 'es-radar'
-      - 'eumetsat-h03b'
-      - 'fi-radar'
-      - 'fmi-silam'
-      - 'goes-16'
-      - 'goes-17'
-      - 'himawari-8'
-      - 'it-radar'
-      - 'mch-radar'
-      - 'meteosat-8'
-      - 'meteosat-11'
-      - 'meteosat-msg'
-      - 'meteosat-msg-ext'
-      - 'mf-arome'
-      - 'mf-radar'
-      - 'mm-euro1k'
-      - 'mm-euro1k-proxy'
-      - 'mm-heliosat'
-      - 'mm-snow'
-      - 'mm-swiss1k'
-      - 'mix-ecmwf-ens'
-      - 'mri-esm2-ssp126'
-      - 'mri-esm2-ssp245'
-      - 'mri-esm2-ssp370'
-      - 'mri-esm2-ssp460'
-      - 'mri-esm2-ssp585'
-      - 'nasa-ghrsst'
-      - 'ncep-gfs'
-      - 'ncep-gfs-ens'
-      - 'ncep-hrrr'
-      - 'noaa-hycom'
-      - 'noaa-radar'
-      - 'noaa-1k-radar'
-      - 'no-radar'
-      - 'pl-radar'
-      - 'se-radar'
-      - 'ukmo-500m-radar'
-      - 'ukmo-euro4'
-      - 'ukmo-um10'
-      - 'ukmo-ukv'
-      - 'ukmo-nowcast-precip'
-      - 'ukmo-nowcast-wind'
-      - 'ukmo-radar'
-      - 'nasa_srtm'
-      - 'noaa_swpc'
-      - 'ukmo_lightning'
-      - 'mm_tides'
-      - 'mm_lightning'
-      - 'mm_country_borders'
-
-  ExampleParameters:
-    type: string
-    enum: &EXAMPLEPARAMETERS
-      - 't_2m:C'
-      - 'precip_1h:mm'
-      - 'prob_precip_1h:p'
-      - 'wind_speed_10m:ms'
-      - 'relative_humidity_2m:p'
-      - 'frost_depth:cm'
-      - 'sunshine_duration_1h:min'
-      - 'global_rad:W'
-
-  Styles:
-    type: string
-    enum: &STYLES
-      - 'blue_magenta'
-      - 'blue_to_red'
-      - 'blues'
-      - 'blues_inverted'
-      - 'ceiling_height_segmented'
-      - 'dwd_warnings'
-      - 'gray'
-      - 'gray_inverted'
-      - 'gray_transparent'
-      - 'jet'
-      - 'jet_segmented'
-      - 'jet_segmented_inverted'
-      - 'lifted_index_global'
-      - 'lifted_index_global_segmented'
-      - 'magenta_blue'
-      - 'periodic'
-      - 'periodic_inverted'
-      - 'plasma'
-      - 'plasma_inverted'
-      - 'precip_usa_segmented'
-      - 'prism'
-      - 'prism_inverted'
-      - 'radar_log'
-      - 'radar_segmented'
-      - 'reds'
-      - 'reds_inverted'
-      - 'red_to_blue'
-      - 'red_yellow_green'
-      - 'seismic'
-      - 'seismic_inverted'
-      - 't_europe'
-      - 't_europe_segmented'
-      - 't_global'
-      - 't_global_segmented'
-      - 'traffic_light'
-      - 'traffic_light_inverted'
-      - 'viridis'
-      - 'viridis_inverted'
-      - 'visibility_segmented'
-      - 'wave_height_segmented'
-
-securityDefinitions:
-  BasicAuth:
-    type: basic
-
-x-components:
-  parameters:
-    PostParameters:
-      in: body
-      name: "Body"
-      description: >
-        **Request Body**
-
-        - **Parameters** are given as list of strings
-
-        - **Locations** can be given as `"lat,lon"` strings, zip codes, `didok IDs` or `didok abbreviations` (or a mix of these)
-
-        - **Format** is one of the generally accepted format strings
-      schema:
-        type: object
-        required:
-          - parameters
-          - location_list
-          - format
-        properties:
-          parameters:
-            type: array
-            style: simple
-            minItems: 1
-            required: true
-            items:
-              pattern: '^[a-zA-Z]+[a-zA-Z0-9_\-]*:[a-zA-Z0-9_\-]+$'
-              type: string
-              enum:
-                - 't_2m:C'
-                - 't_0m:C'
-                - 'precip_1h:mm'
-                - 'prob_precip_1h:p'
-                - 'wind_speed_10m:ms'
-                - 'wind_gusts_10m:ms'
-                - 'relative_humidity_2m:p'
-                - 'weather_symbol_1h:idx'
-                - 'frost_depth:cm'
-                - 'fresh_snow_1h:mm'
-                - 'snow_depth:cm'
-                - 'sunshine_duration_1h:min'
-                - 'global_rad:W'
-                - 'dew_or_rime:idx'
-            example: ['t_2m:C', 'precip_1h:mm']
-          location_list:
-            required: true
-            description: List of points Points can be given as lat/lon pairs, zip codes, didok ids or didok abbreviations.
-            type: array
-            items:
-              type: string
-            example: ["47,8.5", "postal_CH9014", "didok_8501014", "didok_BSEU"]
-            minItems: 1
-          format:
-            required: true
+        # Parameters for DescribeFeatureType
+        - name: TYPENAME
+          in: query
+          required: false
+          schema:
             type: string
             enum:
-              - 'csv'
-              - 'xml'
-              - 'json'
-              - 'png'
-              - 'netcdf'
-              - 'html'
-              - 'grads'
+              - 'stations_mix-obs'
+              - 'stations_mm-mos'
+              - 'lightnings'
+          description: Used for DescribeFeatureType requests. Specify feature type of interest.
 
+        # Parameters for GetFeature
+        - name: BBOX
+          in: query
+          required: false
+          schema:
+            type: string
+            pattern: '^-?[0-9]+(.?[0-9]+)?,-?[0-9]+(.?[0-9]+)?,-?[0-9]+(.?[0-9]+)?,-?[0-9]+(.?[0-9]+)?$'
+          description: Used for GetFeature requests. Defines the area of the requested data.
+
+        - name: MAXFEATURES
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: Used for GetFeature requests. Specifies the maximum amount of features in the response.
+
+        - name: TIME
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Used for GetFeature requests. A single point in time (UTC) for the feature data.
+
+        - name: PARAMETERS
+          in: query
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+          description: Used for GetFeature requests. The parameters to query formatted as a comma-separated list.
+
+        - name: level_of_detail
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Used for GetFeature requests. Specify if all station data or just capital cities should be fetched.
+
+      responses:
+        '200':
+          description: Successful response based on the WFS operation.
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/CsvOkRequest'
+        '401':
+          description: Unauthorized
+          content:
+            text/plain; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedText'
+
+      security:
+        - BasicAuth: []
+
+
+  /mvt/isolines/{parameter}/style.json:
+    get:
+      summary: Request the data necessary to visualise isolines in your client.
+      parameters:
+        - name: parameter
+          schema:
+            $ref: '#/components/parameters/parameters_in_path'
+          in: path
+          required: true
+          
+        - name: optional
+          schema: 
+            $ref: '#/components/parameters/isoline_optionals'
+          in: query
+          required: false
+
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CsvOkRequest'
+        '400':
+          description: Bad request
+          content:
+            text/plain; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/BadRequestText'
+          $ref: '#/components/schemas/BadRequestText'
+        '401':
+          description: Unauthorized
+          content:
+            text/plain; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedText'
+        '404':
+          description: Not found
+          content:
+            text/plain; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/NotFoundText'
+      
+      security:
+        - BasicAuth: []
+      
+  /mvt/symbols/{parameter}/style.json:
+    get: 
+      summary: Request the data necessary to visualise weather symbols in your client.
+      parameters:
+        - name: parameter
+          schema:
+            $ref: '#/components/parameters/symbol_parameter_in_path'
+          in: path
+          required: true
+          
+        - name: optional
+          schema:
+            $ref: '#/components/parameters/symbol_optionals'
+          in: query
+          required: false
+      
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CsvOkRequest'
+        '400':
+          description: Bad request
+          content:
+            text/plain; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/BadRequestText'
+          $ref: '#/components/schemas/BadRequestText'
+        '401':
+          description: Unauthorized
+          content:
+            text/plain; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedText'
+        '404':
+          description: Not found
+          content:
+            text/plain; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/NotFoundText'
+      
+      security:
+        - BasicAuth: []
+
+  /mvt/barbs/{parameter}/style.json:
+    get:
+      summary: Request the data necessary to visualise wind barbs in your client.
+      parameters:
+        - name: parameter
+          schema:
+            $ref: '#/components/parameters/wind_barbs_parameter_in_path'
+          in: path
+          required: true
+        - name: optional
+          schema:
+            $ref: '#/components/parameters/wind_barbs_optionals'
+          in: query
+          required: false
+      
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CsvOkRequest'
+        '400':
+          description: Bad request
+          content:
+            text/plain; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/BadRequestText'
+        '401':
+          description: Unauthorized
+          content:
+            text/plain; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedText'
+        '404':
+          description: Not found
+          content:
+            text/plain; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/NotFoundText'
+      
+      security:
+        - BasicAuth: []
+          
+  /mvt/aviation_reports/taf:0/style.json:
+    get:
+      summary: Request the data necessary to visualise TAF report symbols in your client.
+      parameters:
+        - name: optional
+          $ref: '#/components/parameters/taf_optionals'
+
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CsvOkRequest'
+        '400':
+          description: Bad request
+          content:
+            text/plain; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/BadRequestText'
+          $ref: '#/components/schemas/BadRequestText'
+        '401':
+          description: Unauthorized
+          content:
+            text/plain; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedText'
+        '404':
+          description: Not found
+          content:
+            text/plain; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/NotFoundText'
+      
+      security:
+        - BasicAuth: []
+
+  /mvt/aviation_reports/metar:0/style.json:
+    get:
+      summary: Request the data necessary to visualise METAR report symbols in your client.
+      parameters:
+        - name: optional
+          $ref: '#/components/parameters/date_token_optionals'
+      
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CsvOkRequest'
+        '400':
+          description: Bad request
+          content:
+            text/plain; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/BadRequestText'
+          $ref: '#/components/schemas/BadRequestText'
+        '401':
+          description: Unauthorized
+          content:
+            text/plain; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedText'
+        '404':
+          description: Not found
+          content:
+            text/plain; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/NotFoundText'
+      
+      security:
+        - BasicAuth: []
+
+  /mvt/aviation_reports/sigmet:0/style.json:
+    get:
+      summary: Request the data necessary to visualise SIGMET data in your client.
+      parameters:
+        - name: optional
+          $ref: '#/components/parameters/date_token_optionals'
+      
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CsvOkRequest'
+        '400':
+          description: Bad request
+          content:
+            text/plain; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/BadRequestText'
+          $ref: '#/components/schemas/BadRequestText'
+        '401':
+          description: Unauthorized
+          content:
+            text/plain; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedText'
+        '404':
+          description: Not found
+          content:
+            text/plain; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/NotFoundText'
+      
+      security:
+        - BasicAuth: []
+
+  /mvt/weather_reports/nwa:0/style.json:
+    get:
+      summary: Request the data necessary to visualise National Weather Alerts in your client.
+      parameters:
+        - name: optional
+          $ref: '#/components/parameters/date_token_optionals'
+      
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CsvOkRequest'
+        '400':
+          description: Bad request
+          content:
+            text/plain; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/BadRequestText'
+          $ref: '#/components/schemas/BadRequestText'
+        '401':
+          description: Unauthorized
+          content:
+            text/plain; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedText'
+        '404':
+          description: Not found
+          content:
+            text/plain; charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/NotFoundText'
+      
+      security:
+        - BasicAuth: []
+
+
+components:
+  
+  securitySchemes:
+      BasicAuth:
+        type: http
+        scheme: basic
+
+  schemas:
+    
+    BadRequestText:
+      type: string
+      example: 'PNG only supported for grids'
+    CsvOkRequest:
+      type: string
+      example: "validdate;t_2m:C\n2020-01-29T10:42:29Z;8.3"
+    NotFoundText:
+      type: string
+      example: "Parameter t_m:C not available in model mix"
+    UnauthorizedText:
+      type: string
+      example: 'Username/Password Authentication Failed.'
+
+    LocationPoint:
+      description: Latitude and Longitude in decimal degrees
+      items:
+        type: number
+      maxItems: 2
+      minItems: 2
+      type: array
+      example: [47, 8.5]
+
+    BoundingBox:
+      example: 47.0,10.0_45.0,15.0
+      pattern: '^-?[0-9]+(.[0-9]+)?,-?[0-9]+(.[0-9]+)?_-?[0-9]+(.[0-9]+)?,-?[0-9]+(.[0-9]+)?$'
+      type: string
+  
+    TimePoint:
+      description: >
+        A singular date, specified according to ISO-8601.
+        Shorthand dates can also be used, e.g., 'yesterdayT00:00:00Z'.
+      type: string
+      format: date-time
+      example: '2018-07-05T00:00:00Z'
+
+    TimeRangePeriodEnd:
+      description: >
+        A range of dates from a start to an end with a time interval, specified according to ISO-8601.
+        Shorthand dates can also be used in the range, e.g., 'yesterdayT00:00Z--todayT12:00Z:PT3H'.
+      type: string
+      pattern: '^[1-2][0-9]{3}-[01][0-9]-[0-3][0-9](T[0-2][0-9]:[0-2][0-9]:[0-2][0-9](.[0-9]+)?)?Z--[1-2][0-9]{3}-[01][0-9]-[0-3][0-9](T[0-2][0-9]:[0-2][0-9]:[0-2][0-9](.[0-9]+)?)?Z:PT?[0-9]+[DWMYHMS]$'
+      example: '2018-07-05T00:00:00Z--2018-07-06T00:00:00Z:PT1H'
+          
+    TimeRangePeriodLength:
+      description: > 
+        A range of dates from a start until a length of time with a time step, specified according to ISO-8601.
+        Shorthand dates can also be used in the range, e.g., 'yesterdayT00:00:00ZP1D:PT1H'.
+      type: string
+      pattern: '^[1-2][0-9]{3}-[01][0-9]-[0-3][0-9](T[0-2][0-9]:[0-2][0-9]:[0-2][0-9](.[0-9]+)?)?ZPT?[0-9]+[DWMYHMS]:PT?[0-9]+[DWMYHMS]$'
+      example: '2018-07-05T00:00:00ZP1D:PT1H'
+  
+    AllAvailableModels:
+      type: string
+      enum: &ALLAVAILABLEMODELS
+        - 'ai-fourcast-ecmwf-ifs'
+        - 'ai-graphcast-ecmwf-ifs'
+        - 'chc-chirps2'
+        - 'cmc-gem'
+        - 'dlr-corine'
+        - 'dwd-icon-eu'
+        - 'dwd-icon-global'
+        - 'ecmwf-aifs'
+        - 'ecmwf-cams'
+        - 'ecmwf-cmems'
+        - 'ecmwf-efi'
+        - 'ecmwf-ens'
+        - 'ecmwf-ens-cluster'
+        - 'ecmwf-ens-tc'
+        - 'ecmwf-era5'
+        - 'ecmwf-ifs'
+        - 'ecmwf-mmsf'
+        - 'ecmwf-vareps'
+        - 'ecmwf-wam'
+        - 'eumetsat-h60b'
+        - 'fmi-silam'
+        - 'mf-arome'
+        - 'mix'
+        - 'mix-obs'
+        - 'mix-radar'
+        - 'mix-satellite'
+        - 'mm-euro1k'
+        - 'mm-heliosat'
+        - 'mm-mos'
+        - 'mm-nd1k'
+        - 'mm-snow'
+        - 'mm-swiss1k'
+        - 'mm-tides'
+        - 'mri-esm2-ssp126'
+        - 'mri-esm2-ssp245'
+        - 'mri-esm2-ssp370'
+        - 'mri-esm2-ssp460'
+        - 'mri-esm2-ssp585'
+        - 'nasa-ghrsst'
+        - 'ncep-gfs'
+        - 'ncep-gfs-ens'
+        - 'ncep-hrrr'
+        - 'noaa-swpc'
+        - 'ukmo-um10'
+        - 'noaa_swpc'
+  
+    ExampleParameters:
+      type: string
+      enum: &EXAMPLEPARAMETERS
+        - 't_2m:C'
+        - 'precip_1h:mm'
+        - 'prob_precip_1h:p'
+        - 'wind_speed_10m:ms'
+        - 'relative_humidity_2m:p'
+        - 'frost_depth:cm'
+        - 'sunshine_duration_1h:min'
+        - 'global_rad:W'
+  
+    Styles:
+      type: string
+      enum: &STYLES
+        - 'air_quality_index'
+        - 'blue_magenta'
+        - 'blue_to_red'
+        - 'blues'
+        - 'blues_inverted'
+        - 'ceiling_height_airmet'
+        - 'ceiling_height_segmented'
+        - 'cin_segmented'
+        - 'cloud_type'
+        - 'dwd_radar_5min'
+        - 'dwd_warnings'
+        - 'fresh_snow_long_interval'
+        - 'fresh_snow_short_interval'
+        - 'gray'
+        - 'gray_inverted'
+        - 'gray_transparent'
+        - 'gray_transparent_dark'
+        - 'greens_shifted'
+        - 'heavy_rain_warning_europe_segmented'
+        - 'incessant_rain_warning_europe_segmented'
+        - 'jet'
+        - 'jet_inverted'
+        - 'jet_segmented'
+        - 'jet_segmented_inverted'
+        - 'jetstream'
+        - 'land_usage'
+        - 'lifted_index_global'
+        - 'lifted_index_global_segmented'
+        - 'magenta_blue'
+        - 'msg_h03b'
+        - 'msg_h60b'
+        - 'negative_cold_index_segmented'
+        - 'negative_index_segmented'
+        - 'periodic'
+        - 'periodic_inverted'
+        - 'plasma'
+        - 'plasma_inverted'
+        - 'pollen_europe_segmented'
+        - 'pollen_grains_large'
+        - 'pollen_grains_medium'
+        - 'pollen_grains_small'
+        - 'pollen_segmented'
+        - 'positive_index_segmented'
+        - 'precip_day_europe_segmented'
+        - 'precip_europe'
+        - 'precip_europe_segmented'
+        - 'precip_layer_europe_segmented'
+        - 'precip_layer_segmented'
+        - 'precip_type_europe_segmented'
+        - 'precip_type_intensity_europe_segmented'
+        - 'precip_type_intensity_segmented'
+        - 'precip_type_segmented'
+        - 'precip_usa_segmented'
+        - 'prism'
+        - 'prism_inverted'
+        - 'radar_log'
+        - 'radar_segmented'
+        - 'red_to_blue'
+        - 'red_yellow_green'
+        - 'reds'
+        - 'reds_inverted'
+        - 'satellite_ir_clouds'
+        - 'satellite_ir_clouds_greys'
+        - 'satellite_ir_colored'
+        - 'satellite_ir_water_vapor'
+        - 'satellite_ndvi'
+        - 'seismic'
+        - 'seismic_inverted'
+        - 'snow_depth'
+        - 'storm_warning'
+        - 'sunshine_wind_speed_airmet'
+        - 'surface_wind_speed_airmet'
+        - 't_europe'
+        - 't_europe_segmented'
+        - 't_global'
+        - 't_global_segmented'
+        - 'theta_e_global'
+        - 'theta_e_global_segmented'
+        - 'traffic_light'
+        - 'traffic_light_inverted'
+        - 'tstorm_warning'
+        - 'tstorm_warning_europe_segmented'
+        - 'turbulence_ellrod3_segmented'
+        - 'turbulence_segmented'
+        - 'turbulence_segmented_inverted'
+        - 'uv_index_europe_segmented'
+        - 'viridis'
+        - 'viridis_inverted'
+        - 'visibility_airmet'
+        - 'visibility_segmented'
+        - 'wave_height_segmented'
+        - 'wind_gusts_europe_segmented'
+        - 'wind_shear_airmet'
+        - 'wind_speed_europe_segmented'
+        - 'wind_warning_europe_segmented'
+
+  parameters:
+    
     formatParam:
+      name: format
       description: >
         **Ouput format**
 
-        (see [the docs for more options](http://api.meteomatics.com/API-Request.html#available-formats))
+        (see [the docs for more options](https://www.meteomatics.com/en/api/request/required-parameters/available-formats/))
       in: path
-      name: format
       required: true
-      enum:
-        - 'csv'
-        - 'xml'
-        - 'json'
-        - 'png'
-        - 'netcdf'
-        - 'html'
-        - 'grads'
-      type: string
+      schema:
+        type: string
+        oneOf:
+          - enum:
+            - 'csv'
+            - 'geotiff'
+            - 'grads'
+            - 'html'
+            - 'html_map'
+            - 'json'
+            - 'netcdf'
+            - 'png'
+            - 'webp'
+            - 'xml'
+          - pattern: ^geotiff_.*$
+          - pattern: ^png_.*$
+          - pattern: ^webp_.*$
 
     timeParam:
+      name: validdatetime
       description: >
-        **Time specification according to ISO-8601**
-
-        ***
-
-        ***Times are in UTC by default.*** (`01:00:00Z`)
-
-        ---
-
-        ***
+        **Time specification according to ISO-8601. Times are in UTC by default.*** (`01:00:00Z`)
 
         *You can specify a different timezone by its offset* (e.g. `01:00:00+02:00` for CEST)
 
-        (see [the docs for more details](http://api.meteomatics.com/API-Request.html#time-description))
+        *You can also specify comma-separated lists of time points, of time ranges, or of any combination of these.
+
+        (see [the docs for more details](https://www.meteomatics.com/en/api/request/required-parameters/date-time-description/))
       in: path
-      name: time
       required: true
       schema:
         oneOf:
-          - $ref: '#/definitions/TimePoint'
-          - $ref: '#/definitions/TimeRangePeriodLength'
-          - $ref: '#/definitions/TimeRangePeriodEnd'
-      example: '2018-07-05T00:00:00Z'
+          - $ref: '#/components/schemas/TimePoint'
+          - $ref: '#/components/schemas/TimeRangePeriodLength'
+          - $ref: '#/components/schemas/TimeRangePeriodEnd'
       examples:
         time-point:
           value: '2018-07-05T00:00:00Z'
+        time-point-shorthand:
+          value: 'yesterdayT00:00:00Z'
         time-range:
           value: '2018-07-05T00:00:00ZP1D:PT1H'
+        time-range-shorthand:
+          value: 'yesterdayT00:00Z--todayT12:00Z:PT3H'
         time-range-end:
           value: '2018-07-05T00:00:00Z--2018-07-06T00:00:00Z:PT1H'
-    time_listParam:
-      description: >
-        **Time specification according to ISO-8601**
-
-        ***
-
-        ***Times are in UTC by default.*** (`01:00:00Z`)
-
-        ---
-
-        ***
-
-        *You can specify a different timezone by its offset* (e.g. `01:00:00+02:00` for CEST)
-
-        (see [the docs for more details](http://api.meteomatics.com/API-Request.html#time-description))
-      in: path
-      name: time_list
-      required: true
-      schema:
-        oneOf:
-          - $ref: '#/definitions/TimePoint'
-          - $ref: '#/definitions/TimeRangePeriodLength'
-          - $ref: '#/definitions/TimeRangePeriodEnd'
-      example: '2018-07-05T00:00:00Z'
-      examples:
-        time-point:
-          value: '2018-07-05T00:00:00Z'
-        time-range:
-          value: '2018-07-05T00:00:00ZP1D:PT1H'
-        time-range-end:
-          value: '2018-07-05T00:00:00Z--2018-07-06T00:00:00Z:PT1H'
+        time-range=end-shorthand:
+          value: 'yesterdayT00:00Z--todayT12:00Z:PT3H'
 
     latslons_in_path:
       in: path
       name: latslons
       description: One or more pairs of latitudes and longitudes in decimal degrees, separated by '+' ([WGS-84 format](https://epsg.io/4326))
       required: true
-      type: string
-      pattern: '^(-?[0-9]+(.[0-9]+)?,-?[0-9]+(.[0-9]+)?\+)*(-?[0-9]+(.[0-9]+)?,-?[0-9]+(.[0-9]+)?)$'
-      example: "47.412,9.347"
+      schema:
+        type: string
+        pattern: '^(-?[0-9]+(.[0-9]+)?,-?[0-9]+(.[0-9]+)?\+)*(-?[0-9]+(.[0-9]+)?,-?[0-9]+(.[0-9]+)?)$'
+        example: '47.412,9.347'
+
+    lines_in_path:
+      name: lines
+      description: >
+        A line or a polyline containing one or more segments with a given number of subdivisions for each line.
+
+        The first segment contains two pairs of latitude and longitude, followed by ':' and the number of subdivisions.
+        Optionally, successive lines can be included after '+' by adding a pair of latitude and longitude, followed by ':' and the number of subdivisions, etc.
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: ^(-?(([1-8]?[0-9](\.\d+)?|90(\.0+)?)),-?(([1]?[0-7]?[0-9](\.\d+)?)|180(\.0+)?))_(-?([1-8]?[0-9](\.\d+)?|90(\.0+)?)),-?(([1]?[0-7]?[0-9](\.\d+)?)|180(\.0+)?):\d+((?:\+(-?([1-8]?[0-9](\.\d+)?|90(\.0+)?)),-?(([1]?[0-7]?[0-9](\.\d+)?)|180(\.0+)?)):\d+)*$
+      examples:
+        one-line:
+          value: '47.42,9.37_47.5,8.73:40'
+        simple-polyline:
+          value: '47.42,9.37_47.44,9.13:30+47.5,8.73:50'
+
+    polygons_in_path:
+      name: polygons
+      description: >
+        Polygons as lists of points separated by '_' symbols and ending in ':' and an aggregate option among 'min', 'max', 'mean', 'median', and 'mode'.
+        Multiple polygons can be queried by using a separator among:
+        - '+' (separate polygons, separate aggregations)
+        - 'U' (polygon union, one aggregation)
+        - 'D' (polygon difference, one aggregation)
+      required: true
+      in: path
+      schema:
+        type: string
+      examples:
+        one-polygon:
+          value: '47.38,8.94_47.48,9.01_47.49,9.46_47.66,9.16_47.68,8.67:mean'
+        separate-polygons:
+          value: '47.38,8.94_47.48,9.01_47.49,9.46_47.66,9.16_47.68,8.67:mean+48.38,9.94_48.48,10.01_48.49,10.46_48.66,10.156_48.68,9.67:max'
+        union-of-polygons:
+          value: '52.2,6.6_52.2,7.6_53.2,7.6_53.2,6.6U45.9,7.56_45.9,7.92_46.15,7.92_46.15,7.65:min'
+        diff-of-polygons:
+          value: '0.39,36.94_-0.79,36.94_-0.79,37.84_0.39,37.84D0.04,37.21_-0.32,37.21_-0.32,37.56_0.04,37.56:max'
+
+    polygons_optionals:
+      in: query
+      name: polygon_sampling
+      description: Optionally specify sampling method.
+      required: false
+      schema:
+        type: string
+        enum:
+          - 'adaptive_grid'
+          - 'model_grid'
 
     paramZipCodes:
+      name: zip_code
       description: >
         **Zip codes**
 
@@ -928,22 +1806,24 @@ x-components:
 
         (e.g. `postal_DE10117+postal_CH9014`)
       in: path
-      name: zip_code
       required: true
-      type: array
-      collectionFormat: ssv
-      items:
-        type: string
-        pattern: '^postal_{[A-Z]:2}[0-9]+$'
+      schema:
+        type: array
+        items:
+          type: string
+          pattern: '^postal_[A-Z]{2}[0-9]+$'
+      style: simple
+      explode: false
       examples:
         stgallen:
-          'CH9014'
+          value: 'postal_CH9014'
         berlin:
-          'DE10117'
-        berline&stgallen:
-          'postal_DE10117+postal_CH9014'
+          value: 'postal_DE10117'
+        berlin_and_stgallen:
+          value: 'postal_DE10117+postal_CH9014'
 
     paramDstNr:
+      name: dst_id
       description: >
         **Dst-Nr.** or **Dst-Abk.** as used in https://opentransportdata.swiss/de/dataset/didok
 
@@ -951,49 +1831,53 @@ x-components:
 
         (e.g. `didok_8594953+didok_BSEU`)
       in: path
-      name: dst_id
       required: true
-      oneOf:
-        - type: integer
-        - type: string
-      example: 8501019
+      schema:
+        oneOf:
+          - type: integer
+          - type: string
+        example: 8501019
 
     temporalInterpol:
+      name: temporal_interpolation
       description: >
         Temporal interpolation selection (for observational data only)
 
         ***This is an advanced parameter. Please make sure you are aware of its implications before using it.***
-      type: string
+      
       in: query
       required: false
-      name: temporal_interpolation
-      enum:
-        - 'none'
-        - 'best'
-      default: 'best'
+      schema:
+        type: string
+        enum:
+          - 'none'
+          - 'best'
+        default: 'best'
 
     ensSelect:
+      name: ens_select
       description: >
         Select specific ensemble member (for ensemble models only)
 
         ***This is an advanced parameter. Please make sure you are aware of its implications before using it.***
-      type: array
+      
       in: query
       required: false
-      name: ens_select
-      items:
-        type: string
-        enum:
-          - 'member:0'
-          - 'member:1'
-          - 'member:5-15'
-          - 'member:1-50'
-          - 'median'
-          - 'mean'
-          - 'spread'
-          - 'quantile0.3'
-          - 'quantile0.9'
-          -
+      schema:
+        type: array
+        items:
+          type: string
+          enum:
+            - 'member:0'
+            - 'member:1'
+            - 'member:5-15'
+            - 'member:1-50'
+            - 'median'
+            - 'mean'
+            - 'spread'
+            - 'quantile0.3'
+            - 'quantile0.9'
+    
     clusterSelect:
       description: >
         Select specific cluster (for model *ecmwf-ens-cluster* only)
@@ -1002,237 +1886,190 @@ x-components:
       in: query
       required: false
       name: cluster_select
-      type: string
-      enum:
-        - 'cluster:1'
-        - 'cluster:3-6'
+      schema:
+        type: string
+        enum:
+          - 'cluster:1'
+          - 'cluster:3-6'
 
     timeout:
+      name: timeout
       description: >
         Modify the timeout
 
         ***This is an advanced parameter. Please make sure you are aware of its implications before using it.***
-      type: integer
+      
       in: query
-      required: false
-      name: timeout
-      default: 300
-
-    init_date_in_query:
-      description: >
-        Select a forecast from a specific init_date. Time specification according to ISO-8601 (UTC by default).
-        (see [the docs for more details](http://api.meteomatics.com/API-Request.html#time-description)).
-      in: query
-      name: init_date
       required: false
       schema:
-        - $ref: '#/definitions/TimePoint'
+        type: integer
+        default: 300
+
+    init_date_in_query:
+      name: init_date
+      description: >
+        Select a forecast from a specific init_date. Time specification according to ISO-8601 (UTC by default).
+        (see [the docs for more details](https://www.meteomatics.com/en/api/request/required-parameters/date-time-description/)).
+      in: query
+      required: false
+      schema:
+        $ref: '#/components/schemas/TimePoint'
 
     models_in_get_init_date_query:
+      name: model
       description: >
         Specify the source
       in: query
-      name: model
-      type: string
       required: true
-      enum:
-          - 'at-radar'
-          - 'chc-chirps2'
-          - 'cmc-gem'
-          - 'cz-radar'
-          - 'dk-radar'
-          - 'dlr-corine'
-          - 'dwd-icon-eu'
-          - 'dwd-pollen'
-          - 'dwd-radar-px250'
-          - 'dwd-radar-rx'
-          - 'dwd-radar-wx'
-          - 'ecmwf-cams'
-          - 'ecmwf-cmems'
-          - 'ecmwf-efi'
-          - 'ecmwf-ens-europe'
-          - 'ecmwf-ens-global'
-          - 'ecmwf-ens-cluster'
-          - 'ecmwf-ens-tc'
-          - 'ecmwf-era5'
-          - 'ecmwf-ifs'
-          - 'ecmwf-ifs-mars'
-          - 'ecmwf-mmsf'
-          - 'ecmwf-vareps'
-          - 'ecmwf-wam'
-          - 'es-radar'
-          - 'eumetsat-h03b'
-          - 'fi-radar'
-          - 'fmi-silam'
-          - 'goes-16'
-          - 'goes-17'
-          - 'himawari-8'
-          - 'it-radar'
-          - 'mch-radar'
-          - 'meteosat-8'
-          - 'meteosat-11'
-          - 'meteosat-msg'
-          - 'meteosat-msg-ext'
-          - 'mf-arome'
-          - 'mf-radar'
-          - 'mm-euro1k'
-          - 'mm-euro1k-proxy'
-          - 'mm-heliosat'
-          - 'mm-snow'
-          - 'mm-swiss1k'
-          - 'mix-ecmwf-ens'
-          - 'mri-esm2-ssp126'
-          - 'mri-esm2-ssp245'
-          - 'mri-esm2-ssp370'
-          - 'mri-esm2-ssp460'
-          - 'mri-esm2-ssp585'
-          - 'nasa-ghrsst'
-          - 'ncep-gfs'
-          - 'ncep-gfs-ens'
-          - 'ncep-hrrr'
-          - 'noaa-hycom'
-          - 'noaa-radar'
-          - 'noaa-1k-radar'
-          - 'no-radar'
-          - 'pl-radar'
-          - 'se-radar'
-          - 'ukmo-500m-radar'
-          - 'ukmo-euro4'
-          - 'ukmo-um10'
-          - 'ukmo-ukv'
-          - 'ukmo-nowcast-precip'
-          - 'ukmo-nowcast-wind'
-          - 'ukmo-radar'
+      schema:
+        type: string
+        enum: *ALLAVAILABLEMODELS
 
-    model_in_query:
-      description: Specify the source.
-      in: query
-      name: model
-      required: true
-      type: string
-      enum: *ALLAVAILABLEMODELS
-
-    source_in_query:
+    source_in_path:
+      name: source
       description: Specify the source.
       in: query
       required: false
+      schema:
+        type: string
+        enum: *ALLAVAILABLEMODELS
+
+    source_in_query:
       name: source
-      type: string
-      enum: *ALLAVAILABLEMODELS
-
-
-    bounding_box_in_quey:
-      description: Specify bounding box as a rectangle. North-West corner of the grid (Lat/Lon), South-East corner of the grid (Lat/Lon).
+      description: Specify the source.
       in: query
-      name: bounding_box
-      required: true
-      type: string
-      pattern: '^-?[0-9]+(.[0-9]+)?,-?[0-9]+(.[0-9]+)?_-?[0-9]+(.[0-9]+)?,-?[0-9]+(.[0-9]+)?$'
-      example: 47.0,10.0_45.0,15.0
+      required: false
+      schema:
+        type: string
+        enum: *ALLAVAILABLEMODELS
 
     bounding_box_in_path:
+      name: boundingbox
       description: Specify bounding box as a rectangle. North-West corner of the grid (Lat/Lon), South-East corner of the grid (Lat/Lon).
       in: path
-      name: bounding_box
       required: true
-      type: string
-      pattern: '^-?[0-9]+(.[0-9]+)?,-?[0-9]+(.[0-9]+)?_-?[0-9]+(.[0-9]+)?,-?[0-9]+(.[0-9]+)?$'
-      example: 47.0,10.0_45.0,15.0
+      schema:
+        type: string
+        pattern: '^-?[0-9]+(.[0-9]+)?,-?[0-9]+(.[0-9]+)?_-?[0-9]+(.[0-9]+)?,-?[0-9]+(.[0-9]+)?$'
+        enum:
+          - 'world'
+          - 'global'
+          - 'africa'
+          - 'asia'
+          - 'australia'
+          - 'europe'
+          - 'north-america'
+          - 'south-america'
+          - 'switzerland'
+          - 'uk'
+          - 'baltic-sea'
+          - 'mediterranean-sea'
+          - 'north-atlantic'
+          - 'north-sea'
+      examples:
+        simple_bounding_box:
+          value: '47.0,10.0_45.0,15.0'
+        shorthand_bounding_box:
+          value: 'europe'
 
-    bbox_in_quey:
+    bounding_box_in_query:
+      name: bbox
       description: Specify bounding box as a rectangle. North-West corner of the grid (Lat/Lon), South-East corner of the grid (Lat/Lon).
       in: query
-      name: bbox
       required: true
-      type: string
-      pattern: '^-?[0-9]+(.[0-9]+)?,-?[0-9]+(.[0-9]+)?,-?[0-9]+(.[0-9]+)?,-?[0-9]+(.[0-9]+)?$'
-      example: 10.0,30.0,25.0,40.0
+      schema:
+        type: string
+        pattern: '^-?[0-9]+(.[0-9]+)?,-?[0-9]+(.[0-9]+)?,-?[0-9]+(.[0-9]+)?,-?[0-9]+(.[0-9]+)?$'
+        enum:
+          - 'world'
+          - 'global'
+          - 'africa'
+          - 'asia'
+          - 'australia'
+          - 'europe'
+          - 'north-america'
+          - 'south-america'
+          - 'switzerland'
+          - 'uk'
+          - 'baltic-sea'
+          - 'mediterranean-sea'
+          - 'north-atlantic'
+          - 'north-sea'
+      examples:
+        simple_bounding_box:
+          value: '47.0,10.0_45.0,15.0'
+        shorthand_bounding_box:
+          value: 'europe'
 
     resolutionLatLon_in_path:
-      in: path
       name: resolutionLatLon
       description: >
         **Resolution in latitude and longitude direction**
         Given in WGS-84 decimal degrees (0.01 ~ 1km in Switzerland)
+      in: path
       required: true
-      type: string
-      pattern: '^[0-9]+(.[0-9]+)?,[0-9]+(.[0-9]+)?$'
-      example: '0.01,0.01'
+      schema:
+        type: string
+        pattern: '^[0-9]+(.[0-9]+)?,[0-9]+(.[0-9]+)?$'
+        example: '0.01,0.01'
 
     pointsLatLon_in_path:
-      in: path
       name: pointsLatLon
       description: Number of points on latitude and longitude axis.
+      in: path
       required: true
-      type: string
-      pattern: '^[0-9]+x[0-9]+$'
-      example: '800x600'
-
+      schema:
+        type: string
+        pattern: '^[0-9]+x[0-9]+$'
+        example: '800x600'
 
     format_in_get_lightning_list:
+      name: format
       description: Specify the output format.
       in: query
-      name: format
-      type: array
-      style: simple
       required: true
-      items:
-          type: string
-          enum:
-              - 'csv'
-              - 'json'
-              - 'xml'
+      schema:
+        type: string
+        enum:
+          - 'csv'
+          - 'json'
+          - 'xml'
 
     parameters_in_path:
       description: >
-        Specify the parameter of interest.
-        (for all available paramaters see [list of available parameters](http://api.meteomatics.com/Available-Parameters.html))
+        Specify the parameters of interest.
+        (for all available paramaters see [list of available parameters](https://www.meteomatics.com/en/api/available-parameters/))
       in: path
       name: parameters
       required: true
-      type: array
-      enum: *EXAMPLEPARAMETERS
-
-    parameter_in_path:
-      description: >
-        Specify the parameter of interest.
-        (for all available paramaters see [list of available parameters](http://api.meteomatics.com/Available-Parameters.html))
-      in: path
-      name: parameter
-      required: true
-      type: string
-      enum: *EXAMPLEPARAMETERS
+      schema:
+        type: array
+        items:
+          $ref: '#/components/schemas/ExampleParameters'
+        enum: *EXAMPLEPARAMETERS
 
     parameters_in_query:
       description: >
         Specify the parameter of interest.
-        (for all available paramaters see [list of available parameters](http://api.meteomatics.com/Available-Parameters.html))
+        (for all available paramaters see [list of available parameters](https://www.meteomatics.com/en/api/available-parameters/))
       in: query
       name: parameters
-      required: true
-      type: array
-      enum: *EXAMPLEPARAMETERS
-
-    parameter_in_query:
-      description: >
-        Specify the parameter of interest.
-        (for all available paramaters see [list of available parameters](http://api.meteomatics.com/Available-Parameters.html))
-      in: query
-      name: parameter
-      required: true
-      type: string
-      enum: *EXAMPLEPARAMETERS
+      schema:
+        type: array
+        items:
+          $ref: '#/components/schemas/ExampleParameters'
+        enum: *EXAMPLEPARAMETERS
 
     layers_in_query:
-      description: >
-        Specify the parameter of interest.
-        (for all available paramaters see [list of available parameters](http://api.meteomatics.com/Available-Parameters.html))
-      in: query
       name: layers
+      description: >
+        Specify the parameters of interest.
+        (for all available paramaters see [list of available parameters](https://www.meteomatics.com/en/api/available-parameters/))
+      in: query
       required: true
-      type: string
-      enum: *EXAMPLEPARAMETERS
-
+      schema:
+        type: string
+        enum: *EXAMPLEPARAMETERS
 
     valid_date_in_query:
       description: >
@@ -1248,14 +2085,14 @@ x-components:
 
         *You can specify a different timezone by its offset* (e.g. `01:00:00+02:00` for CEST)
 
-        (see [the docs for more details](http://api.meteomatics.com/API-Request.html#time-description))
+        (see [the docs for more details](https://www.meteomatics.com/en/api/request/required-parameters/date-time-description/))
       in: query
       name: valid_date
       required: true
       schema:
         oneOf:
-          - $ref: '#/definitions/TimeRangePeriodLength'
-          - $ref: '#/definitions/TimeRangePeriodEnd'
+          - $ref: '#/components/schemas/TimeRangePeriodLength'
+          - $ref: '#/components/schemas/TimeRangePeriodEnd'
       example: '2022-08-15T00:00:00ZP1D'
 
     time_range_in_query:
@@ -1272,58 +2109,53 @@ x-components:
 
         *You can specify a different timezone by its offset* (e.g. `01:00:00+02:00` for CEST)
 
-        (see [the docs for more details](http://api.meteomatics.com/API-Request.html#time-description))
+        (see [the docs for more details](https://www.meteomatics.com/en/api/request/required-parameters/date-time-description/))
       in: query
       name: time_range
       required: true
       schema:
         oneOf:
-          - $ref: '#/definitions/TimeRangePeriodLength'
-          - $ref: '#/definitions/TimeRangePeriodEnd'
+          - $ref: '#/components/schemas/TimeRangePeriodLength'
+          - $ref: '#/components/schemas/TimeRangePeriodEnd'
       example: '2022-08-15T00:00:00ZP1D'
 
     format_in_get_colormap:
+      name: format
       description: The output format of the colormap.
       in: query
-      name: format
-      type: string
       required: true
-      enum:
-        - 'csv'
-
-    style_in_query:
-      description: The colormap you want to get the numerical values for.
-      in: query
-      name: style
-      required: true
-      type: string
-      enum: *STYLES
+      schema:
+        type: string
+        enum:
+          - 'csv'
 
     styles_in_query:
-      description: The colormap you want to get the numerical values for.
+      name: styles
+      description: The colormaps you want to get the numerical values for.
       in: query
-      name: styles   # yes, we call it styles but we support only one style
-      required: true
-      type: string
-      enum: *STYLES
+      required: false
+      schema:
+        type: string
+        enum: *STYLES
 
     location_in_query:
       description: Coordinates or bounding box.
       in: query
       name: location
-      type: string
       schema:
         oneOf:
-          - $ref: '#/definitions/BoundingBox'
-          - $ref: '#/definitions/LocationPoint'
+          - $ref: '#/components/schemas/BoundingBox'
+          - $ref: '#/components/schemas/LocationPoint'
 
     elevation_in_query:
       description: Elevation is meters above sea level.
       in: query
       name: elevation
-      type: number
+      schema:
+        type: number
 
     startdate_in_query:
+      name: startdate
       description: >
         **Time specification according to ISO-8601**
 
@@ -1337,13 +2169,14 @@ x-components:
 
         *You can specify a different timezone by its offset* (e.g. `01:00:00+02:00` for CEST)
 
-        (see [the docs for more details](http://api.meteomatics.com/API-Request.html#time-description))
+        (see [the docs for more details](https://www.meteomatics.com/en/api/request/required-parameters/date-time-description/))
       in: query
-      name: startdate
+      required: false
       schema:
-          - $ref: '#/definitions/TimePoint'
+        $ref: '#/components/schemas/TimePoint'
 
     datetime_in_query:
+      name: datetime
       description: >
         **Time specification according to ISO-8601**
 
@@ -1357,33 +2190,13 @@ x-components:
 
         *You can specify a different timezone by its offset* (e.g. `01:00:00+02:00` for CEST)
 
-        (see [the docs for more details](http://api.meteomatics.com/API-Request.html#time-description))
+        (see [the docs for more details](https://www.meteomatics.com/en/api/request/required-parameters/date-time-description/))
       in: query
-      name: datetime
       schema:
-        - $ref: '#/definitions/TimePoint'
+        $ref: '#/components/schemas/TimePoint'
 
     enddate_in_query:
-      description: >
-        **Time specification according to ISO-8601**
-
-        ***
-
-        ***Times are in UTC by default.*** (`01:00:00Z`)
-
-        ---
-
-        ***
-
-        *You can specify a different timezone by its offset* (e.g. `01:00:00+02:00` for CEST)
-
-        (see [the docs for more details](http://api.meteomatics.com/API-Request.html#time-description))
-      in: query
       name: enddate
-      schema:
-          - $ref: '#/definitions/TimePoint'
-
-    time_in_query:
       description: >
         **Time specification according to ISO-8601**
 
@@ -1397,75 +2210,281 @@ x-components:
 
         *You can specify a different timezone by its offset* (e.g. `01:00:00+02:00` for CEST)
 
-        (see [the docs for more details](http://api.meteomatics.com/API-Request.html#time-description))
+        (see [the docs for more details](https://www.meteomatics.com/en/api/request/required-parameters/date-time-description/))
       in: query
-      name: time
+      required: false
       schema:
-        - $ref: '#/definitions/TimePoint'
+        $ref: '#/components/schemas/TimePoint'
 
     isoline_range_in_query:
+      name: isoline_range
       description: Define an interval for which isolines shall be generated. The structure is as follows.
       required: false
       in: query
-      name: isoline_range
-      type: string
-      pattern: '^-?[0-9]+(.?[0-9]+)?,-?[0-9]+(.?[0-9]+)?,-?[0-9]+(.?[0-9]+)?$'
+      schema:
+        type: string
+        pattern: '^-?[0-9]+(.?[0-9]+)?,-?[0-9]+(.?[0-9]+)?,-?[0-9]+(.?[0-9]+)?$'
       example: "-40,40,5"
 
     isoline_values_in_query:
+      name: isoline_values
       description: Define a single value or a list of values for which isolines shall be generated.
       required: false
       in: query
-      name: isoline_values
-      type: string
-      pattern: '^(-?[0-9]+(.?[0-9]+)?,)*-?[0-9]+(.?[0-9]+)?$'
+      schema:
+        type: string
+        pattern: '^(-?[0-9]+(.?[0-9]+)?,)*-?[0-9]+(.?[0-9]+)?$'
       example:
         - "0,0.5,1,1.5,2,2.5,3"
         - "5"
 
     resolution_in_query:
+      name: resolution
       description: Set the resolution of the input data, which the calculated isolines are based on (either in degrees or pixels).
       required: false
       in: query
-      name: resolution
-      type: string
-      pattern: '^(-?[0-9]+(.[0-9]+)?,-?[0-9]+(.[0-9]+)?)|([0-9]+x[0-9]+)$'
+      schema:
+        type: string
+        pattern: '^(-?[0-9]+(.[0-9]+)?,-?[0-9]+(.[0-9]+)?)|([0-9]+x[0-9]+)$'
       example:
         - "0.05,0.05"
         - "400x500"
 
     radius_median_filter_in_query:
+      name: radius_median_filter
       description: Smoothing of isolines. Enter number between 0-10. Default is 1.
       required: false
       in: query
-      name: radius_median_filter
-      type: number
-      minimum: 0
-      maximum: 10
+      schema:
+        type: number
+        minimum: 0
+        maximum: 10
 
     radius_gaussian_filter_in_query:
+      name: radius_gaussian_filter
       description: Smoothing of isolines. Enter number between 0-10. Default is 3.
       required: false
       in: query
-      name: radius_gaussian_filter
-      type: number
-      minimum: 0
-      maximum: 10
+      schema:
+        type: number
+        minimum: 0
+        maximum: 10
 
     isoline_min_points_in_query:
+      name: min_points
       description: Minimum number of points per isolines. Must be at least 2.
       required: false
       in: query
-      name: isoline_min_points
-      type: number
-      minimum: 2
+      schema:
+        type: number
+        minimum: 2
 
     crs_in_query:
+      name: crs
       description: the coordinate reference system used for georeferencing.
       required: true
       in: query
-      name: crs
-      type: string
-      enum:
-        - "EPSG:4326"
-        - "EPSG:3857"
+      schema:
+        type: string
+        enum:
+          - 'EPSG:4326'
+          - 'EPSG:3857'
+          - 'EPSG:2056'
+
+    behavior_on_invalid:
+      name: on_invalid
+      description: If data is missing, choose whether to send an error message or to replace invalid data with the invalid value -999.
+      required: false
+      in: query
+      schema:
+        type: string
+        enum:
+          - 'fail'
+          - 'fill_with_invalid'
+  
+    route_optional:
+      name: route
+      description: Specify "route=true" if you are sending a route query.
+      required: false
+      in: query
+      schema:
+        type: string
+        enum:
+          - 'true'
+          - 'false'
+
+    isoline_optionals:
+      name: isoline_optionals
+      in: query
+      style: form
+      explode: true
+      schema:
+        type: object
+        properties:
+          access_token:
+            type: string
+            description: "Instead of basic authentication, you can opt to use OAuth authentication."
+            example: "eyJhbGciOicCI6IkpXVCJ9.eyJzdWIwIiwibmFtZSI6IkpoxNTE2MjM5MDIy2QT4fwpMeJf36POk6yJV_adQssw5c"
+          datetime:
+            type: string
+            format: date-time
+            description: "Date for which the vector data is retrieved."
+            example: "2022-05-28T12:00Z"
+          source:
+            type: string
+            description: "This parameter is used to select a specific source (model) for weather data."
+            example: "ecmwf-ifs"
+          isoline_range:
+            type: string
+            description: "An interval for which isolines shall be generated. The structure is as follows: start,end,spacing."
+            example: "-40,40,5"
+          isoline_values:
+            type: array
+            items:
+              type: number
+            description: "A single value or a list of values for which isolines shall be generated."
+            example: [0, 0.5, 1, 1.5, 2, 2.5, 3]
+          radius_median_filter:
+            type: integer
+            description: "An integer between 0-10 for smoothing of isolines."
+            example: 1
+          radius_gaussian_filter:
+            type: integer
+            description: "An integer between 0-10 for smoothing of isolines."
+            example: 3
+          isoline_min_points:
+            type: integer
+            description: "Minimum number of points per isolines."
+            example: 2
+
+    symbol_parameter_in_path:
+      name: symbol_parameter
+      in: query
+      required: true
+      schema:
+        type: string
+        description: "The parameter for which you want to retrieve the symbols. Available formats are `weather_symbol_<interval>:idx` with intervals of 20min, 30min, 1h, 3h, 6h, 12h, 24h."
+        example: "weather_symbol_1h:idx"
+     
+    symbol_optionals:
+      name: symbol_optionals
+      $ref: '#/components/parameters/date_res_source_token_optionals'
+
+    wind_barbs_parameter_in_path:
+      name: wind_barbs_parameter
+      in: query
+      required: true
+      schema:
+        type: string
+        description: |
+          The parameter for which you want to retrieve the symbols. The format should be `wind_speed_<level>:kn`.
+          - **Altitude Levels**: Available from 2m to 20000m (continuously) or 5ft to 65000ft (continuously).
+          - **Pressure Levels (Global)**: 1000hPa, 950hPa, 925hPa, 900hPa, 850hPa, 800hPa, 700hPa, 500hPa, 300hPa, 250hPa, 200hPa, 150hPa, 100hPa, 70hPa, 50hPa, 10hPa.
+          - **Flight Levels (Global)**: FL20, FL50, FL100, FL140, FL180, FL240, FL300, FL340, FL390, FL450.
+          Example values:
+          - `wind_speed_100hPa:kn`
+          - `wind_speed_10m:kn`
+        example: "wind_speed_100hPa:kn"
+
+    wind_barbs_optionals:
+      name: wind_barbs_optionals
+      in: query
+      style: form
+      explode: true
+      schema:
+        type: object
+        properties:
+          color:
+            type: string
+            description: Whether to color the wind barbs according to the wind speed colormap.
+            example: 'true'
+          access_token:
+            type: string
+            description: "Instead of basic authentication, you can opt to use OAuth authentication."
+            example: "eyJhbGciOicCI6IkpXVCJ9.eyJzdWIwIiwibmFtZSI6IkpoxNTE2MjM5MDIy2QT4fwpMeJf36POk6yJV_adQssw5c"
+          datetime:
+            type: string
+            format: date-time
+            description: "Date for which the vector data is retrieved."
+            example: "2022-05-28T12:00Z"
+          source:
+            type: string
+            description: "This parameter is used to select a specific source (e.g., model) for weather data."
+            example: "ecmwf-ifs"
+          resolution:
+            type: string
+            description: "Controls the density of weather symbols per tile."
+            example: "0.1,0.1"
+
+    taf_optionals:
+      name: taf_optionals
+      $ref: '#/components/parameters/date_token_optionals'
+    
+    metar_optionals:
+      name: taf_optionals
+      $ref: '#/components/parameters/date_token_optionals'
+    
+    sigmet_optionals:
+      name: taf_optionals
+      $ref: '#/components/parameters/date_token_optionals'
+
+    nwa_optionals:
+      name: taf_optionals
+      $ref: '#/components/parameters/date_token_optionals'
+
+    date_res_source_token_optionals:
+      name: date_res_source_token_optionals
+      in: query
+      style: form
+      explode: true
+      schema:
+        type: object
+        properties:
+          access_token:
+            type: string
+            description: "Instead of basic authentication, you can opt to use OAuth authentication."
+            example: "eyJhbGciOicCI6IkpXVCJ9.eyJzdWIwIiwibmFtZSI6IkpoxNTE2MjM5MDIy2QT4fwpMeJf36POk6yJV_adQssw5c"
+          datetime:
+            type: string
+            format: date-time
+            description: "Date for which the vector data is retrieved."
+            example: "2022-05-28T12:00Z"
+          source:
+            type: string
+            description: "This parameter is used to select a specific source (e.g., model) for weather data."
+            example: "ecmwf-ifs"
+          resolution:
+            type: string
+            description: "Controls the density of weather symbols per tile."
+            example: "0.1,0.1"
+
+    date_token_optionals:
+      name: date_token_optionals
+      in: query
+      style: form
+      explode: true
+      schema:
+        type: object
+        properties:
+          access_token:
+            type: string
+            description: "Instead of basic authentication, you can opt to use OAuth authentication."
+            example: "eyJhbGciOicCI6IkpXVCJ9.eyJzdWIwIiwibmFtZSI6IkpoxNTE2MjM5MDIy2QT4fwpMeJf36POk6yJV_adQssw5c"
+          datetime:
+            type: string
+            format: date-time
+            description: "Date for which the vector data is retrieved."
+            example: "2022-05-28T12:00Z"
+
+    format_in_getLegendGraphic:
+      name: format
+      in: query
+      description: >
+        Specifies the output format.
+      required: true
+      schema:
+        type: string
+        enum:
+          - 'application/xml'
+          - 'image/svg+xml'
+          - 'image/webp'
