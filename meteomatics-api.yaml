@@ -58,9 +58,6 @@ paths:
         - name: temporal_interpolation
           $ref: '#/components/parameters/temporalInterpol'
 
-        - name: init_date
-          $ref: '#/components/parameters/init_date_in_query'
-
         - name: on_invalid
           $ref: '#/components/parameters/behavior_on_invalid'
   
@@ -153,9 +150,6 @@ paths:
         - name: temporal_interpolation
           $ref: '#/components/parameters/temporalInterpol'
 
-        - name: init_date
-          $ref: '#/components/parameters/init_date_in_query'
-
         - name: on_invalid
           $ref: '#/components/parameters/behavior_on_invalid'
     
@@ -232,9 +226,6 @@ paths:
         
         - name: temporal_interpolation
           $ref: '#/components/parameters/temporalInterpol'
-
-        - name: init_date
-          $ref: '#/components/parameters/init_date_in_query'
         
         - name: optionals
           $ref: '#/components/parameters/polygons_optionals'
@@ -309,9 +300,6 @@ paths:
         
         - name: temporal_interpolation
           $ref: '#/components/parameters/temporalInterpol'
-
-        - name: init_date
-          $ref: '#/components/parameters/init_date_in_query'
         
         - name: route
           $ref: '#/components/parameters/route_optional'
@@ -378,9 +366,6 @@ paths:
         
         - name: temporal_interpolation
           $ref: '#/components/parameters/temporalInterpol'
-
-        - name: init_date
-          $ref: '#/components/parameters/init_date_in_query'
         
         - name: route
           $ref: '#/components/parameters/route_optional'
@@ -445,7 +430,7 @@ paths:
           - Other optional parameters are available as they would be for GET requests.
         required: true
         content:
-          application/json:
+          application/xml:
             schema:
               type: object
               required:
@@ -481,9 +466,6 @@ paths:
         
                 timeout:
                   $ref: '#/components/parameters/timeout'
-
-                init_date:
-                  $ref: '#/components/parameters/init_date_in_query'
 
                 on_invalid:
                   $ref: '#/components/parameters/behavior_on_invalid'
@@ -1904,16 +1886,6 @@ components:
       schema:
         type: integer
         default: 300
-
-    init_date_in_query:
-      name: init_date
-      description: >
-        Select a forecast from a specific init_date. Time specification according to ISO-8601 (UTC by default).
-        (see [the docs for more details](https://www.meteomatics.com/en/api/request/required-parameters/date-time-description/)).
-      in: query
-      required: false
-      schema:
-        $ref: '#/components/schemas/TimePoint'
 
     models_in_get_init_date_query:
       name: model
