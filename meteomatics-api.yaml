@@ -46,6 +46,12 @@ paths:
         - name: source
           $ref: '#/components/parameters/source_in_query'
         
+        - name: calibrated
+          $ref: '#/components/parameters/calibration_in_query'
+
+        - name: mask
+          $ref: '#/components/parameters/mask_in_query'
+
         - name: ens_select
           $ref: '#/components/parameters/ensSelect'
         
@@ -137,7 +143,13 @@ paths:
           
         - name: source
           $ref: '#/components/parameters/source_in_query'
-        
+
+        - name: calibrated
+          $ref: '#/components/parameters/calibration_in_query'
+
+        - name: mask
+          $ref: '#/components/parameters/mask_in_query'
+
         - name: ens_select
           $ref: '#/components/parameters/ensSelect'
         
@@ -214,7 +226,13 @@ paths:
           
         - name: source
           $ref: '#/components/parameters/source_in_query'
-        
+
+        - name: calibrated
+          $ref: '#/components/parameters/calibration_in_query'
+
+        - name: mask
+          $ref: '#/components/parameters/mask_in_query'
+
         - name: ens_select
           $ref: '#/components/parameters/ensSelect'
         
@@ -288,7 +306,13 @@ paths:
           
         - name: source
           $ref: '#/components/parameters/source_in_query'
-        
+
+        - name: calibrated
+          $ref: '#/components/parameters/calibration_in_query'
+
+        - name: mask
+          $ref: '#/components/parameters/mask_in_query'
+
         - name: ens_select
           $ref: '#/components/parameters/ensSelect'
         
@@ -354,7 +378,13 @@ paths:
         
         - name: source
           $ref: '#/components/parameters/source_in_query'
-        
+
+        - name: calibrated
+          $ref: '#/components/parameters/calibration_in_query'
+
+        - name: mask
+          $ref: '#/components/parameters/mask_in_query'
+
         - name: ens_select
           $ref: '#/components/parameters/ensSelect'
         
@@ -455,8 +485,11 @@ paths:
                 source:
                   $ref: '#/components/parameters/source_in_query'
 
-                temporal_interpolation:
-                  $ref: '#/components/parameters/temporalInterpol'
+                calibrated:
+                  $ref: '#/components/parameters/calibration_in_query'
+                
+                mask:
+                  $ref: '#/components/parameters/mask_in_query'
         
                 ens_select:
                   $ref: '#/components/parameters/ensSelect'
@@ -464,6 +497,9 @@ paths:
                 cluster_select:
                   $ref: '#/components/parameters/clusterSelect'
         
+                temporal_interpolation:
+                  $ref: '#/components/parameters/temporalInterpol'
+
                 timeout:
                   $ref: '#/components/parameters/timeout'
 
@@ -1159,16 +1195,11 @@ paths:
       summary: Request the data necessary to visualise isolines in your client.
       parameters:
         - name: parameter
-          schema:
-            $ref: '#/components/parameters/parameters_in_path'
-          in: path
-          required: true
+          $ref: '#/components/parameters/parameters_in_path'
           
         - name: optional
           schema: 
-            $ref: '#/components/parameters/isoline_optionals'
-          in: query
-          required: false
+          $ref: '#/components/parameters/isoline_optionals'
 
       responses:
         '200':
@@ -1205,16 +1236,10 @@ paths:
       summary: Request the data necessary to visualise weather symbols in your client.
       parameters:
         - name: parameter
-          schema:
-            $ref: '#/components/parameters/symbol_parameter_in_path'
-          in: path
-          required: true
+          $ref: '#/components/parameters/symbol_parameter_in_path'
           
         - name: optional
-          schema:
-            $ref: '#/components/parameters/symbol_optionals'
-          in: query
-          required: false
+          $ref: '#/components/parameters/symbol_optionals'
       
       responses:
         '200':
@@ -1251,15 +1276,10 @@ paths:
       summary: Request the data necessary to visualise wind barbs in your client.
       parameters:
         - name: parameter
-          schema:
-            $ref: '#/components/parameters/wind_barbs_parameter_in_path'
-          in: path
-          required: true
+          $ref: '#/components/parameters/wind_barbs_parameter_in_path'
+          
         - name: optional
-          schema:
-            $ref: '#/components/parameters/wind_barbs_optionals'
-          in: query
-          required: false
+          $ref: '#/components/parameters/wind_barbs_optionals'
       
       responses:
         '200':
@@ -2019,6 +2039,7 @@ components:
         items:
           $ref: '#/components/schemas/ExampleParameters'
         enum: *EXAMPLEPARAMETERS
+      example: 't_2m:C'
 
     parameters_in_query:
       description: >
@@ -2031,17 +2052,7 @@ components:
         items:
           $ref: '#/components/schemas/ExampleParameters'
         enum: *EXAMPLEPARAMETERS
-
-    layers_in_query:
-      name: layers
-      description: >
-        Specify the parameters of interest.
-        (for all available paramaters see [list of available parameters](https://www.meteomatics.com/en/api/available-parameters/))
-      in: query
-      required: true
-      schema:
-        type: string
-        enum: *EXAMPLEPARAMETERS
+      example: 't_2m:C'
 
     valid_date_in_query:
       description: >
@@ -2263,6 +2274,24 @@ components:
           - 'EPSG:3857'
           - 'EPSG:2056'
 
+    calibration_in_query:
+      name: calibrated
+      description: Enable the calibration of historical and nowcast data with actual station measurements.
+      in: query
+      required: false
+      schema:
+        type: string
+        enum: ['true', 'false']
+
+    mask_in_query:
+      name: mask
+      description: Mask a parameter to only be valid on land or on sea areas.
+      in: query
+      required: false
+      schema:
+        type: string
+        enum: ['land', 'sea']
+
     behavior_on_invalid:
       name: on_invalid
       description: If data is missing, choose whether to send an error message or to replace invalid data with the invalid value -999.
@@ -2288,6 +2317,7 @@ components:
     isoline_optionals:
       name: isoline_optionals
       in: query
+      required: false
       style: form
       explode: true
       schema:
@@ -2336,7 +2366,8 @@ components:
       schema:
         type: string
         description: "The parameter for which you want to retrieve the symbols. Available formats are `weather_symbol_<interval>:idx` with intervals of 20min, 30min, 1h, 3h, 6h, 12h, 24h."
-        example: "weather_symbol_1h:idx"
+      example: "weather_symbol_1h:idx"
+      
      
     symbol_optionals:
       name: symbol_optionals
@@ -2344,7 +2375,7 @@ components:
 
     wind_barbs_parameter_in_path:
       name: wind_barbs_parameter
-      in: query
+      in: path
       required: true
       schema:
         type: string
@@ -2356,11 +2387,12 @@ components:
           Example values:
           - `wind_speed_100hPa:kn`
           - `wind_speed_10m:kn`
-        example: "wind_speed_100hPa:kn"
+      example: "wind_speed_100hPa:kn"
 
     wind_barbs_optionals:
       name: wind_barbs_optionals
       in: query
+      required: false
       style: form
       explode: true
       schema:
